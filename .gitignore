@@ -1,0 +1,27 @@
+# Files to ignore when considering what GIT should commit.
+
+# Visual Studio 
+*.suo
+*.sln.docstates
+*.obj
+*.pch
+*.tlog
+*.log
+*.scc
+*.exp
+*.ilk
+*.lastbuildstate
+vc100.pdb
+ipch
+*.sdf
+*.opensdf
+*.idb
+*.exe
+*.pdb
+*.hg
+*.hgignore
+*.cache
+/obj
+/obj/Release
+/obj/Debug
+/bin/Debug
