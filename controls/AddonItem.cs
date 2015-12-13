@@ -17,6 +17,7 @@ namespace workshopper.controls
 
         private Color colOverlay;
         private bool m_bActive;
+        private bool m_bWhitelisted;
         private PublishedFileId_t ulFileID;
         private string pszName;
         private string pszDescription;
@@ -43,6 +44,7 @@ namespace workshopper.controls
             m_bUploading = false;
             btnUpdate = null;
             timFrame.Enabled = false;
+            m_bWhitelisted = pszTags.Contains("Whitelisted");
         }
 
         public void UpdateItem(string title, string description, string tags, int visibility, string lastChangeDate)
@@ -53,6 +55,7 @@ namespace workshopper.controls
             m_iVisibility = visibility;
             pszDate = lastChangeDate;
             m_bUploading = false;
+            m_bWhitelisted = pszTags.Contains("Whitelisted");
             Invalidate();
         }
 
@@ -161,6 +164,10 @@ namespace workshopper.controls
             base.OnPaint(e);
 
             e.Graphics.DrawImage(globals.GetTexture(ulFileID.ToString(), "jpg"), new Rectangle(1, 1, Height - 2, Height - 2));
+
+            if (m_bWhitelisted)
+                e.Graphics.DrawImage(Properties.Resources.verified, new Rectangle(Height - 18, Height - 18, 18, 18));
+
             e.Graphics.FillRectangle(new SolidBrush(colOverlay), new Rectangle(0, 0, Width, Height));
             e.Graphics.DrawRectangle(Pens.Black, new Rectangle(1, 1, Height - 2, Height - 2));
 

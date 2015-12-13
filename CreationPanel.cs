@@ -19,6 +19,7 @@ namespace workshopper
     {
         private RadioButton[] m_pVisibilityChoices;
         private TextBox m_pTitle;
+        private RichTextBox m_pPatchNotes;
         private RichTextBox m_pDescription;
         private TextBox[] m_pLabelFields;
         private CheckBoxItem[] m_pCheckBox;
@@ -94,6 +95,8 @@ namespace workshopper
                     m_pCheckBox[7].ActiviateItem(true);
             }
 
+            m_pPatchNotes.Visible = m_pPatchNotes.Enabled = true;
+
             Invalidate();
         }
 
@@ -112,8 +115,10 @@ namespace workshopper
             _fileDialog.Multiselect = false;
             _fileDialog.Filter = "JPG files|*.jpg";
             _fileDialog.FileOk += new CancelEventHandler(OnSelectImage);
+            _fileDialog.InitialDirectory = utils.GetGameDirectory((AppId_t)346330);
 
             _folderDialog = new FolderBrowserDialog();
+            _folderDialog.SelectedPath = utils.GetGameDirectory((AppId_t)346330);
 
             TextButton btnImg = new TextButton("Select Image:", Color.White, Color.Red);
             btnImg.Parent = this;
@@ -188,6 +193,15 @@ namespace workshopper
             m_pDescription.BorderStyle = BorderStyle.FixedSingle;
             m_pDescription.Font = new System.Drawing.Font("Arial", 8, FontStyle.Regular);
             m_pDescription.Bounds = new Rectangle(310, (int)flStandardHeight + 65, Width - 320, 85);
+
+            m_pPatchNotes = new RichTextBox();
+            m_pPatchNotes.Parent = this;
+            m_pPatchNotes.ForeColor = Color.White;
+            m_pPatchNotes.BackColor = BackColor;
+            m_pPatchNotes.BorderStyle = BorderStyle.FixedSingle;
+            m_pPatchNotes.Font = new System.Drawing.Font("Arial", 8, FontStyle.Regular);
+            m_pPatchNotes.Bounds = new Rectangle(380, (int)flStandardHeight + 175, Width - 390, 54);
+            m_pPatchNotes.Visible = m_pPatchNotes.Enabled = false;
 
             ImageButton btnUpload = new ImageButton("upload", "upload_hover");
             btnUpload.Parent = this;
@@ -343,7 +357,8 @@ namespace workshopper
                 return;
             }
 
-            if (!IsStringValid(m_pTitle.Text) || !IsStringValid(m_pDescription.Text))
+            if (!IsStringValid(m_pTitle.Text) || !IsStringValid(m_pDescription.Text) ||
+                (m_bShouldUpdateItem && !IsStringValid(m_pPatchNotes.Text) && !string.IsNullOrEmpty(m_pPatchNotes.Text)))
             {
                 utils.ShowWarningDialog("Invalid characters detected!", null, true);
                 return;
@@ -358,9 +373,9 @@ namespace workshopper
                     return;
                 }
 
-                if (fileSize > 67108864)
+                if (fileSize > 104857600)
                 {
-                    utils.ShowWarningDialog("Content size is too big, 64MB is max!", null, true);
+                    utils.ShowWarningDialog("Content size is too big, 100MB is max!", null, true);
                     return;
                 }
             }
@@ -382,7 +397,7 @@ namespace workshopper
             }
 
             if (m_bShouldUpdateItem)
-                SubmitWorkshopItem(itemUniqueID, "Patch!");
+                SubmitWorkshopItem(itemUniqueID, m_pPatchNotes.Text);
             else
                 UGCHandler.CreateItem();
         }
@@ -430,6 +445,9 @@ namespace workshopper
             e.Graphics.DrawString(Text, Font, Brushes.White, new Rectangle(0, 2, Width, (int)flStandardHeight));
             e.Graphics.DrawString("Title:", Font, Brushes.White, new Rectangle(310, (int)flStandardHeight + 4, Width - 320, 14));
             e.Graphics.DrawString("Description:", Font, Brushes.White, new Rectangle(310, (int)flStandardHeight + 45, Width - 320, 14));
+
+            if (m_bShouldUpdateItem)
+                e.Graphics.DrawString("Changelog:", Font, Brushes.White, new Rectangle(380, (int)flStandardHeight + 155, Width - 390, 16));
 
             string imagePreview = (m_bHasChangedImagePath ? pszImagePath : null);
             m_pLabelFields[0].Text = imagePreview;

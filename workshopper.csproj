@@ -184,6 +184,7 @@
     <None Include="bin\Release\icon.png" />
     <None Include="bin\Release\assets\shared\unknown.png" />
     <None Include="bin\Release\assets\workshopper\unknown.png" />
+    <None Include="bin\Release\verified.png" />
     <Content Include="icon.ico" />
     <None Include="Resources\DefaultImage.png" />
   </ItemGroup>

@@ -203,5 +203,16 @@ namespace workshopper.core
             FileInfo fileData = new FileInfo(path);
             return (ulong)fileData.Length;
         }
+
+        public static string GetGameDirectory(AppId_t appID)
+        {
+            if (!SteamApps.BIsAppInstalled(appID))
+                return "";
+
+            string path = "";
+            SteamApps.GetAppInstallDir(appID, out path, 256);
+
+            return path;
+        }
     }
 }
