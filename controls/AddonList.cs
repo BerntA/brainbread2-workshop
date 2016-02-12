@@ -1,4 +1,10 @@
-﻿using System;
+﻿//=========       Copyright © Reperio Studios 2013-2016 @ Bernt Andreas Eide!       ============//
+//
+// Purpose: A list of UGC Addon items
+//
+//=============================================================================================//
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;

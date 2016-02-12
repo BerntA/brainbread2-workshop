@@ -1,4 +1,10 @@
-﻿using System;
+﻿//=========       Copyright © Reperio Studios 2013-2016 @ Bernt Andreas Eide!       ============//
+//
+// Purpose: SteamAPI entry point
+//
+//=============================================================================================//
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;

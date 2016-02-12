@@ -1,4 +1,10 @@
-﻿using System;
+﻿//=========       Copyright © Reperio Studios 2013-2016 @ Bernt Andreas Eide!       ============//
+//
+// Purpose: Shared Definitons
+//
+//=============================================================================================//
+
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;

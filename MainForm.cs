@@ -1,4 +1,10 @@
-﻿using System;
+﻿//=========       Copyright © Reperio Studios 2013-2016 @ Bernt Andreas Eide!       ============//
+//
+// Purpose: Base form, displays your addons and their upload/update progress and other options
+//
+//=============================================================================================//
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;

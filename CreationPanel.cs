@@ -1,4 +1,10 @@
-﻿using Steamworks;
+﻿//=========       Copyright © Reperio Studios 2013-2016 @ Bernt Andreas Eide!       ============//
+//
+// Purpose: UGC Creation/Updating Form
+//
+//=============================================================================================//
+
+using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

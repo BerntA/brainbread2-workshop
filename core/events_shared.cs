@@ -1,4 +1,10 @@
-﻿using Steamworks;
+﻿//=========       Copyright © Reperio Studios 2013-2016 @ Bernt Andreas Eide!       ============//
+//
+// Purpose: Event Definitions
+//
+//=============================================================================================//
+
+using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,4 +1,10 @@
-﻿using System;
+﻿//=========       Copyright © Reperio Studios 2013-2016 @ Bernt Andreas Eide!       ============//
+//
+// Purpose: Steam UGC handler, handles uploading, downloading, updating and so forth
+//
+//=============================================================================================//
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
