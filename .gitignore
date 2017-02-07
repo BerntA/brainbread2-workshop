@@ -9,7 +9,11 @@
 *.log
 *.scc
 *.exp
+*.tmp
+*.dav
+*.userprefs
 *.ilk
+*.user
 *.lastbuildstate
 vc100.pdb
 ipch
@@ -21,7 +25,12 @@ ipch
 *.hg
 *.hgignore
 *.cache
+*/bin
+*/obj
 /obj
 /obj/Release
 /obj/Debug
 /bin/Debug
+/bin/Debug/assets/workshopper/addons
+/bin/Release/assets/workshopper/addons
+workshopper_log.txt
