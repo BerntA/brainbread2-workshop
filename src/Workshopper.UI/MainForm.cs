@@ -16,39 +16,38 @@ using System.Windows.Forms;
 using Workshopper.Controls;
 using Workshopper.Core;
 using Steamworks;
+using Workshopper.Filesystem;
 
 namespace Workshopper.UI
 {
     public partial class MainForm : BaseForm
     {
-        float flStandardHeight;
         public AddonList _addonList;
-        protected override void OnFormCreate(float percentW, float percentH)
+        public MainForm()
         {
             InitializeComponent();
             Opacity = 0;
-            flStandardHeight = ((float)Height * 0.075F);
 
-            TextButton btnCreate = new TextButton("Create", Color.FromArgb(255, 255, 255), Color.FromArgb(235, 20, 20));
+            TextButton btnCreate = new TextButton(Localization.GetTextForToken("MAIN_CREATE"), Color.FromArgb(255, 255, 255), Color.FromArgb(235, 20, 20));
             btnCreate.Parent = this;
-            btnCreate.Bounds = new Rectangle(4, 2, 50, (int)flStandardHeight);
             btnCreate.Click += new EventHandler(OnClickCreate);
+            btnCreate.Name = "CreateButton";
 
-            TextButton btnHelp = new TextButton("Help", Color.FromArgb(255, 255, 255), Color.FromArgb(235, 20, 20));
+            TextButton btnHelp = new TextButton(Localization.GetTextForToken("MAIN_HELP"), Color.FromArgb(255, 255, 255), Color.FromArgb(235, 20, 20));
             btnHelp.Parent = this;
-            btnHelp.Bounds = new Rectangle(60, 2, 40, (int)flStandardHeight);
             btnHelp.Click += new EventHandler(OnClickHelp);
+            btnHelp.Name = "HelpButton";
 
-            TextButton btnRefresh = new TextButton("Refresh", Color.FromArgb(255, 255, 255), Color.FromArgb(235, 20, 20));
+            TextButton btnRefresh = new TextButton(Localization.GetTextForToken("MAIN_REFRESH"), Color.FromArgb(255, 255, 255), Color.FromArgb(235, 20, 20));
             btnRefresh.Parent = this;
-            btnRefresh.Bounds = new Rectangle(104, 2, 60, (int)flStandardHeight);
             btnRefresh.Click += new EventHandler(OnClickRefresh);
+            btnRefresh.Name = "RefreshButton";
 
             _addonList = new AddonList();
             _addonList.Parent = this;
-            _addonList.Bounds = new Rectangle(0, (int)flStandardHeight, Width - 1, (Height - (int)flStandardHeight - 2));
+            _addonList.Name = "AddonList";
 
-            base.OnFormCreate(0.075F, 0.075F);
+            LoadLayout("main");
         }
 
         private void OnClickRefresh(object sender, EventArgs e)
@@ -67,41 +66,12 @@ namespace Workshopper.UI
             panel.ShowDialog(this);
         }
 
-        protected override void OnFormRunFrame()
-        {
-            base.OnFormRunFrame();
-
-            Utils.HandleLogging();
-            SteamHandler.RunCallbacks();
-        }
-
-        protected override void OnFormActive()
-        {
-            if (SteamHandler.InitSteamAPI(this))
-            {
-                UGCHandler.Initialize();
-            }
-            else
-            {
-                OnFormExit();
-                return;
-            }
-
-            base.OnFormActive();
-        }
-
-        protected override void OnFormExit()
-        {
-            SteamHandler.Shutdown();
-            base.OnFormExit();
-        }
-
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
 
-            e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(12, 12, 10)), new Rectangle(0, 0, Width, (int)flStandardHeight));
-            e.Graphics.DrawRectangle(Pens.DimGray, new Rectangle(0, (int)flStandardHeight, Width - 1, (Height - (int)flStandardHeight - 2)));
+            e.Graphics.FillRectangle(new SolidBrush(GetLayoutLoader().GetResItemFgColor("NavBar")), GetLayoutLoader().GetResItemBounds("NavBar"));
+            e.Graphics.DrawRectangle(Pens.DimGray, GetLayoutLoader().GetResItemBounds("Frame"));
         }
     }
 }

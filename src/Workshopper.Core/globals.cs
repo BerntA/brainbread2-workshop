@@ -18,6 +18,8 @@ namespace Workshopper.Core
     {
         public static string GetAppPath() { return Application.StartupPath; }
         public static string GetTexturePath() { return string.Format("{0}\\assets", GetAppPath()); }
+
+        // Return the image found at the specified 'path'.
         public static Image GetTexture(string folder, string name, string extension = "png")
         {
             try
@@ -31,12 +33,12 @@ namespace Workshopper.Core
             }
         }
 
+        // Return the image found, does a recursive search for the desired image name.
         public static Image GetTexture(string name, string extension = "png")
         {
-            string folder = null;
-
             try
             {
+                string folder = null;
                 foreach (string file in Directory.EnumerateFiles(GetTexturePath(), string.Format("*.{0}", extension), SearchOption.AllDirectories))
                 {
                     string rawFileName = Path.GetFileNameWithoutExtension(file);

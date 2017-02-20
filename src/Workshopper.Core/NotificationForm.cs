@@ -21,16 +21,11 @@ namespace Workshopper.Core
         private string _textNotification;
         public NotificationForm(string text)
         {
-            _textNotification = text;
-            Text = text;
-        }
-
-        protected override void OnFormCreate(float percentW, float percentH)
-        {
             InitializeComponent();
             Opacity = 0;
-
-            base.OnFormCreate(0.13F, 1F);
+            _textNotification = text;
+            Text = text;
+            LoadLayout("warningdialog");
         }
 
         protected override void OnFormExit()
@@ -42,8 +37,8 @@ namespace Workshopper.Core
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
-            e.Graphics.DrawString(_textNotification, Font, Brushes.White, new Rectangle(0, 7, Width, Height));
-            e.Graphics.DrawRectangle(new Pen(Color.FromArgb(42, 38, 40)), new Rectangle(0, 0, Width - 1, Height - 1));
+            e.Graphics.DrawString(_textNotification, Font, Brushes.White, GetLayoutLoader().GetResItemBounds("WarningText"));
+            e.Graphics.DrawRectangle(new Pen(GetLayoutLoader().GetResItemFgColor("Frame")), GetLayoutLoader().GetResItemBounds("Frame"));
         }
     }
 }

@@ -102,6 +102,7 @@
       <DependentUpon>TextButton.cs</DependentUpon>
     </Compile>
     <Compile Include="Workshopper.Core\EventsShared.cs" />
+    <Compile Include="Workshopper.Filesystem\Localization.cs" />
     <Compile Include="Workshopper.Core\SteamHandler.cs" />
     <Compile Include="Workshopper.Core\Globals.cs" />
     <Compile Include="Workshopper.Core\NotificationForm.cs">
@@ -126,6 +127,8 @@
     <Compile Include="Workshopper.UI\BaseForm.Designer.cs">
       <DependentUpon>BaseForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Workshopper.UI\CustomResourceItem.cs" />
+    <Compile Include="Workshopper.UI\DynamicLayoutLoader.cs" />
     <Compile Include="Workshopper.UI\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>

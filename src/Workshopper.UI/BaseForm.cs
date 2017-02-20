@@ -15,6 +15,7 @@ using System.Text;
 using System.Windows.Forms;
 using Workshopper.Controls;
 using Workshopper.Core;
+using Workshopper.Filesystem;
 
 namespace Workshopper.UI
 {
@@ -28,6 +29,34 @@ namespace Workshopper.UI
         [DllImportAttribute("user32.dll")]
         public static extern bool ReleaseCapture();
 
+        protected DynamicLayoutLoader _layoutLoader;
+
+        public BaseForm()
+        {
+            InitializeComponent();
+
+            ImageButton exitButton = new ImageButton("exit", "exit_hover");
+            exitButton.Parent = this;
+            exitButton.Click += new EventHandler(OnClickExit);
+            exitButton.Name = "CloseButton";
+            timFadeIn.Enabled = true;
+        }
+
+        virtual public DynamicLayoutLoader GetLayoutLoader() { return _layoutLoader; }
+        virtual public void LoadLayout(string file)
+        {
+            _layoutLoader = DynamicLayoutLoader.LoadLayoutForControl(file, this);
+        }
+
+        virtual protected void OnFormActive()
+        {
+        }
+
+        virtual protected void OnFormExit()
+        {
+            Dispose();
+        }
+
         protected override void OnMouseDown(MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
@@ -40,44 +69,9 @@ namespace Workshopper.UI
             base.OnMouseDown(e);
         }
 
-        public BaseForm()
-        {
-            InitializeComponent();
-            OnFormCreate(0.075F, 0.075F);
-        }
-
         private void OnClickExit(object sender, EventArgs e)
         {
             timFadeOut.Enabled = true;
-        }
-
-        virtual protected void OnFormCreate(float percentW, float percentH)
-        {
-            float btnSizeW, btnSizeH;
-            btnSizeW = ((float)Width * percentW);
-            btnSizeH = ((float)Height * percentH);
-
-            ImageButton exitButton = new ImageButton("exit", "exit_hover");
-            exitButton.Parent = this;
-            exitButton.Bounds = new Rectangle((Width - (int)btnSizeW), 0, (int)btnSizeW, (int)btnSizeH);
-            exitButton.Click += new EventHandler(OnClickExit);
-
-            timFadeIn.Enabled = true;
-        }
-
-        virtual protected void OnFormActive()
-        {
-            timFrame.Enabled = true;
-        }
-
-        virtual protected void OnFormExit()
-        {
-            Dispose();
-        }
-
-        virtual protected void OnFormRunFrame()
-        {
-
         }
 
         private void timFadeOut_Tick(object sender, EventArgs e)
@@ -87,7 +81,6 @@ namespace Workshopper.UI
             {
                 Opacity = 0;
                 timFadeOut.Enabled = false;
-                timFrame.Enabled = false;
                 OnFormExit();
             }
         }
@@ -103,25 +96,10 @@ namespace Workshopper.UI
             }
         }
 
-        private void BaseForm_FormClosed(object sender, FormClosedEventArgs e)
-        {
-
-        }
-
         private void BaseForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             e.Cancel = true;
             timFadeOut.Enabled = true;
-        }
-
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            base.OnPaint(e);
-        }
-
-        private void timFrame_Tick(object sender, EventArgs e)
-        {
-            OnFormRunFrame();
         }
     }
 }

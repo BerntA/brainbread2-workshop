@@ -1,0 +1,8 @@
+"LocalizationData"
+{
+	"APP_INIT_FAIL_1" "Invalid or non existant SteamAppid.txt!"
+	"APP_INIT_FAIL_2" "Unable to initialize SteamAPI!"
+	"MAIN_CREATE" "Create"
+	"MAIN_HELP" "Help"
+	"MAIN_REFRESH" "Refresh"
+}

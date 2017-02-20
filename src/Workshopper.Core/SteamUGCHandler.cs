@@ -265,7 +265,9 @@ namespace Workshopper.Core
             }
 
             UGCHandler.GetImagePreviewQueue().Clear();
-            SteamHandler.GetMainForm()._addonList.RefreshItems();
+
+            if (SteamHandler.GetMainForm() != null)
+                SteamHandler.GetMainForm()._addonList.RefreshItems();
         }
     }
 }

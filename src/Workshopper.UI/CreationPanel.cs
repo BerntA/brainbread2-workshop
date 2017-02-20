@@ -33,25 +33,140 @@ namespace Workshopper.UI
         private string pszImagePath;
         private string pszContentPath;
         private PublishedFileId_t itemUniqueID;
-
         private OpenFileDialog _fileDialog;
         private FolderBrowserDialog _folderDialog;
-        private float flStandardHeight;
         private bool m_bShouldUpdateItem;
         private bool m_bHasChangedImagePath;
 
         public CreationPanel()
         {
+            InitializeComponent();
+            Opacity = 0;
+
             pszTagList = new List<string>();
             pszImagePath = null;
             pszContentPath = null;
             m_bShouldUpdateItem = false;
             m_bHasChangedImagePath = false;
+
+            _fileDialog = new OpenFileDialog();
+            _fileDialog.DefaultExt = ".jpg";
+            _fileDialog.CheckFileExists = true;
+            _fileDialog.CheckPathExists = true;
+            _fileDialog.Title = "Select an image";
+            _fileDialog.AddExtension = true;
+            _fileDialog.Multiselect = false;
+            _fileDialog.Filter = "JPG files|*.jpg";
+            _fileDialog.FileOk += new CancelEventHandler(OnSelectImage);
+            _fileDialog.InitialDirectory = Utils.GetGameDirectory((AppId_t)346330);
+
+            _folderDialog = new FolderBrowserDialog();
+            _folderDialog.SelectedPath = Utils.GetGameDirectory((AppId_t)346330);
+
+            TextButton btnImg = new TextButton("Select Image:", Color.White, Color.Red);
+            btnImg.Parent = this;
+            btnImg.Click += new EventHandler(OnOpenImageSelection);
+            btnImg.Name = "ImagePathButton";
+
+            TextButton btnFile = new TextButton("Select File Dir:", Color.White, Color.Red);
+            btnFile.Parent = this;
+            btnFile.Click += new EventHandler(OnOpenFolderDialog);
+            btnFile.Name = "FilePathButton";
+
+            m_pLabelFields = new TextBox[2];
+            for (int i = 0; i < 2; i++)
+            {
+                m_pLabelFields[i] = new TextBox();
+                m_pLabelFields[i].Parent = this;
+                m_pLabelFields[i].ForeColor = Color.White;
+                m_pLabelFields[i].BackColor = Color.FromArgb(45, 45, 45);
+                m_pLabelFields[i].AutoSize = false;
+                m_pLabelFields[i].ReadOnly = true;
+                m_pLabelFields[i].BorderStyle = BorderStyle.None;
+                m_pLabelFields[i].Multiline = false;
+                m_pLabelFields[i].TextAlign = HorizontalAlignment.Left;
+                m_pLabelFields[i].Font = new Font("Arial", 10, FontStyle.Regular);
+            }
+
+            m_pLabelFields[0].Name = "ImagePathLabel";
+            m_pLabelFields[1].Name = "FilePathLabel";
+
+            m_pCheckBox = new CheckBoxItem[8];
+            for (int i = 0; i < 8; i++)
+            {
+                m_pCheckBox[i] = new CheckBoxItem(Utils.GetAvailableTags[i]);
+                m_pCheckBox[i].Parent = this;
+                m_pCheckBox[i].Click += new EventHandler(OnTagClicked);
+                m_pCheckBox[i].Name = string.Format("CheckBox{0}", (i + 1));
+            }
+
+            m_pContestTags = new ComboBox();
+            m_pContestTags.Parent = this;
+            m_pContestTags.DropDownStyle = ComboBoxStyle.DropDownList;
+            m_pContestTags.Cursor = Cursors.Hand;
+            m_pContestTags.Items.Insert(0, "None");
+            Utils.AddContestItems(m_pContestTags);
+            m_pContestTags.SelectedIndex = 0;
+            m_pContestTags.Name = "ContestTags";
+
+            m_pTitle = new TextBox();
+            m_pTitle.Parent = this;
+            m_pTitle.Multiline = false;
+            m_pTitle.Font = new System.Drawing.Font("Arial", 8, FontStyle.Regular);
+            m_pTitle.ForeColor = Color.White;
+            m_pTitle.BackColor = BackColor;
+            m_pTitle.BorderStyle = BorderStyle.FixedSingle;
+            m_pTitle.Name = "TitleField";
+
+            m_pDescription = new RichTextBox();
+            m_pDescription.Parent = this;
+            m_pDescription.ForeColor = Color.White;
+            m_pDescription.BackColor = BackColor;
+            m_pDescription.BorderStyle = BorderStyle.FixedSingle;
+            m_pDescription.Font = new System.Drawing.Font("Arial", 8, FontStyle.Regular);
+            m_pDescription.Name = "DescriptionField";
+
+            m_pPatchNotes = new RichTextBox();
+            m_pPatchNotes.Parent = this;
+            m_pPatchNotes.ForeColor = Color.White;
+            m_pPatchNotes.BackColor = BackColor;
+            m_pPatchNotes.BorderStyle = BorderStyle.FixedSingle;
+            m_pPatchNotes.Font = new System.Drawing.Font("Arial", 8, FontStyle.Regular);
+            m_pPatchNotes.Visible = m_pPatchNotes.Enabled = false;
+            m_pPatchNotes.Name = "PatchNotes";
+
+            ImageButton btnUpload = new ImageButton("upload", "upload_hover");
+            btnUpload.Parent = this;
+            btnUpload.Click += new EventHandler(OnUploadAddon);
+            btnUpload.Name = "CreateButton";
+
+            m_pVisibilityChoices = new RadioButton[3];
+            for (int i = 0; i < 3; i++)
+            {
+                m_pVisibilityChoices[i] = new RadioButton();
+                m_pVisibilityChoices[i].Parent = this;
+                m_pVisibilityChoices[i].Font = new Font("Arial", 9, FontStyle.Regular);
+                m_pVisibilityChoices[i].ForeColor = Color.White;
+                m_pVisibilityChoices[i].BackColor = Color.Transparent;
+                m_pVisibilityChoices[i].AutoSize = false;
+                m_pVisibilityChoices[i].Cursor = Cursors.Hand;
+                m_pVisibilityChoices[i].Name = string.Format("VisibilityButton{0}", (i + 1));
+            }
+
+            m_pVisibilityChoices[0].Text = "Public";
+            m_pVisibilityChoices[1].Text = "Private";
+            m_pVisibilityChoices[2].Text = "Hidden";
+
+            m_pVisibilityChoices[0].Select();
+
+            LoadLayout("creationmenu");
+
+            UGCHandler.OnCreateWorkshopItem += new UGCHandler.ItemCreatedHandler(OnCreateItem);
         }
 
         public CreationPanel(string title, string description, string tags, int visibility, PublishedFileId_t fileID)
+            : this()
         {
-            pszTagList = new List<string>();
             m_bShouldUpdateItem = true;
             m_bHasChangedImagePath = false;
             Text = "Update Addon";
@@ -103,138 +218,6 @@ namespace Workshopper.UI
             m_pPatchNotes.Visible = m_pPatchNotes.Enabled = true;
 
             Invalidate();
-        }
-
-        protected override void OnFormCreate(float percentW, float percentH)
-        {
-            InitializeComponent();
-            Opacity = 0;
-            flStandardHeight = ((float)Height * 0.075F);
-
-            _fileDialog = new OpenFileDialog();
-            _fileDialog.DefaultExt = ".jpg";
-            _fileDialog.CheckFileExists = true;
-            _fileDialog.CheckPathExists = true;
-            _fileDialog.Title = "Select an image";
-            _fileDialog.AddExtension = true;
-            _fileDialog.Multiselect = false;
-            _fileDialog.Filter = "JPG files|*.jpg";
-            _fileDialog.FileOk += new CancelEventHandler(OnSelectImage);
-            _fileDialog.InitialDirectory = Utils.GetGameDirectory((AppId_t)346330);
-
-            _folderDialog = new FolderBrowserDialog();
-            _folderDialog.SelectedPath = Utils.GetGameDirectory((AppId_t)346330);
-
-            TextButton btnImg = new TextButton("Select Image:", Color.White, Color.Red);
-            btnImg.Parent = this;
-            btnImg.Bounds = new Rectangle(2, Height - 122, 100, 20);
-            btnImg.Click += new EventHandler(OnOpenImageSelection);
-
-            TextButton btnFile = new TextButton("Select File Dir:", Color.White, Color.Red);
-            btnFile.Parent = this;
-            btnFile.Bounds = new Rectangle(2, Height - 102, 100, 20);
-            btnFile.Click += new EventHandler(OnOpenFolderDialog);
-
-            m_pLabelFields = new TextBox[2];
-            for (int i = 0; i < 2; i++)
-            {
-                m_pLabelFields[i] = new TextBox();
-                m_pLabelFields[i].Parent = this;
-                m_pLabelFields[i].ForeColor = Color.White;
-                m_pLabelFields[i].BackColor = Color.FromArgb(45, 45, 45);
-                m_pLabelFields[i].AutoSize = false;
-                m_pLabelFields[i].ReadOnly = true;
-                m_pLabelFields[i].BorderStyle = BorderStyle.None;
-                m_pLabelFields[i].Multiline = false;
-                m_pLabelFields[i].TextAlign = HorizontalAlignment.Left;
-                m_pLabelFields[i].Font = new Font("Arial", 10, FontStyle.Regular);
-            }
-
-            Size strSize = TextRenderer.MeasureText("Select Image:", m_pLabelFields[0].Font);
-            m_pLabelFields[0].Bounds = new Rectangle(2 + strSize.Width, Height - 122, 300 - strSize.Width + 2, strSize.Height);
-            strSize = TextRenderer.MeasureText("Select File Dir:", m_pLabelFields[1].Font);
-            m_pLabelFields[1].Bounds = new Rectangle(2 + strSize.Width, Height - 102, 300 - strSize.Width + 2, strSize.Height);
-
-            m_pCheckBox = new CheckBoxItem[8];
-
-            for (int i = 0; i < 8; i++)
-            {
-                m_pCheckBox[i] = new CheckBoxItem(Utils.GetAvailableTags[i]);
-                m_pCheckBox[i].Parent = this;
-                m_pCheckBox[i].Click += new EventHandler(OnTagClicked);
-            }
-
-            m_pCheckBox[0].Bounds = new Rectangle(6, (Height - 64) + 0, 100, 20);
-            m_pCheckBox[1].Bounds = new Rectangle(6, (Height - 64) + 20, 100, 20);
-            m_pCheckBox[2].Bounds = new Rectangle(6, (Height - 64) + 40, 100, 20);
-            m_pCheckBox[3].Bounds = new Rectangle(106, (Height - 64) + 0, 100, 20);
-            m_pCheckBox[4].Bounds = new Rectangle(106, (Height - 64) + 20, 100, 20);
-            m_pCheckBox[5].Bounds = new Rectangle(206, (Height - 64) + 0, 100, 20);
-            m_pCheckBox[6].Bounds = new Rectangle(206, (Height - 64) + 20, 100, 20);
-            m_pCheckBox[7].Bounds = new Rectangle(206, (Height - 64) + 40, 100, 20);
-
-            m_pContestTags = new ComboBox();
-            m_pContestTags.Parent = this;
-            m_pContestTags.Bounds = new Rectangle(310, Height - 30, 160, 15);
-            m_pContestTags.DropDownStyle = ComboBoxStyle.DropDownList;
-            m_pContestTags.Cursor = Cursors.Hand;
-            m_pContestTags.Items.Insert(0, "None");
-            Utils.AddContestItems(m_pContestTags);
-            m_pContestTags.SelectedIndex = 0;
-
-            m_pTitle = new TextBox();
-            m_pTitle.Parent = this;
-            m_pTitle.Multiline = false;
-            m_pTitle.Font = new System.Drawing.Font("Arial", 8, FontStyle.Regular);
-            m_pTitle.Bounds = new Rectangle(310, (int)flStandardHeight + 20, Width - 320, 8);
-            m_pTitle.ForeColor = Color.White;
-            m_pTitle.BackColor = BackColor;
-            m_pTitle.BorderStyle = BorderStyle.FixedSingle;
-
-            m_pDescription = new RichTextBox();
-            m_pDescription.Parent = this;
-            m_pDescription.ForeColor = Color.White;
-            m_pDescription.BackColor = BackColor;
-            m_pDescription.BorderStyle = BorderStyle.FixedSingle;
-            m_pDescription.Font = new System.Drawing.Font("Arial", 8, FontStyle.Regular);
-            m_pDescription.Bounds = new Rectangle(310, (int)flStandardHeight + 65, Width - 320, 85);
-
-            m_pPatchNotes = new RichTextBox();
-            m_pPatchNotes.Parent = this;
-            m_pPatchNotes.ForeColor = Color.White;
-            m_pPatchNotes.BackColor = BackColor;
-            m_pPatchNotes.BorderStyle = BorderStyle.FixedSingle;
-            m_pPatchNotes.Font = new System.Drawing.Font("Arial", 8, FontStyle.Regular);
-            m_pPatchNotes.Bounds = new Rectangle(380, (int)flStandardHeight + 175, Width - 390, 54);
-            m_pPatchNotes.Visible = m_pPatchNotes.Enabled = false;
-
-            ImageButton btnUpload = new ImageButton("upload", "upload_hover");
-            btnUpload.Parent = this;
-            btnUpload.Bounds = new Rectangle(Width - 94, Height - 34, 90, 30);
-            btnUpload.Click += new EventHandler(OnUploadAddon);
-
-            m_pVisibilityChoices = new RadioButton[3];
-            for (int i = 0; i < 3; i++)
-            {
-                m_pVisibilityChoices[i] = new RadioButton();
-                m_pVisibilityChoices[i].Parent = this;
-                m_pVisibilityChoices[i].Font = new Font("Arial", 9, FontStyle.Regular);
-                m_pVisibilityChoices[i].ForeColor = Color.White;
-                m_pVisibilityChoices[i].BackColor = Color.Transparent;
-                m_pVisibilityChoices[i].AutoSize = false;
-                m_pVisibilityChoices[i].Bounds = new Rectangle(310, ((int)flStandardHeight + 160) + (i * 18), 100, 18);
-                m_pVisibilityChoices[i].Cursor = Cursors.Hand;
-            }
-
-            m_pVisibilityChoices[0].Text = "Public";
-            m_pVisibilityChoices[1].Text = "Private";
-            m_pVisibilityChoices[2].Text = "Hidden";
-
-            m_pVisibilityChoices[0].Select();
-
-            UGCHandler.OnCreateWorkshopItem += new UGCHandler.ItemCreatedHandler(OnCreateItem);
-
-            base.OnFormCreate(0.07F, 0.07F);
         }
 
         private void SubmitWorkshopItem(PublishedFileId_t fileID, string changelog)
@@ -441,24 +424,24 @@ namespace Workshopper.UI
             if (pszImagePath != null && File.Exists(pszImagePath))
                 render = Image.FromFile(pszImagePath);
 
-            e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(12, 12, 10)), new Rectangle(0, 0, Width, (int)flStandardHeight));
-            e.Graphics.DrawImage(render, new Rectangle(4, (int)flStandardHeight + 4, 300, 150));
-            e.Graphics.DrawRectangle(Pens.Black, new Rectangle(4, (int)flStandardHeight + 4, 300, 150));
+            e.Graphics.FillRectangle(new SolidBrush(GetLayoutLoader().GetResItemBgColor("Header")), GetLayoutLoader().GetResItemBounds("Header"));
+            e.Graphics.DrawImage(render, GetLayoutLoader().GetResItemBounds("ImagePreview"));
+            e.Graphics.DrawRectangle(Pens.Black, GetLayoutLoader().GetResItemBounds("ImagePreviewFrame"));
 
             StringFormat format = new StringFormat();
             format.LineAlignment = StringAlignment.Center;
             format.Alignment = StringAlignment.Near;
 
-            e.Graphics.DrawString("Tags", new Font("Arial", 14, FontStyle.Bold, GraphicsUnit.Pixel), Brushes.White, new Rectangle(2, Height - 84, 100, 20), format);
-            e.Graphics.DrawRectangle(Pens.Black, new Rectangle(2, Height - 64, 304, 60));
+            e.Graphics.DrawString("Tags", new Font("Arial", 14, FontStyle.Bold, GraphicsUnit.Pixel), Brushes.White, GetLayoutLoader().GetResItemBounds("TagsLabel"), format);
+            e.Graphics.DrawRectangle(Pens.Black, GetLayoutLoader().GetResItemBounds("TagsFrame"));
 
-            e.Graphics.DrawString("Contest:", Font, Brushes.White, new Rectangle(310, Height - 50, 160, 15));
-            e.Graphics.DrawString(Text, Font, Brushes.White, new Rectangle(0, 2, Width, (int)flStandardHeight));
-            e.Graphics.DrawString("Title:", Font, Brushes.White, new Rectangle(310, (int)flStandardHeight + 4, Width - 320, 14));
-            e.Graphics.DrawString("Description:", Font, Brushes.White, new Rectangle(310, (int)flStandardHeight + 45, Width - 320, 14));
+            e.Graphics.DrawString("Contest:", Font, Brushes.White, GetLayoutLoader().GetResItemBounds("ContestLabel"));
+            e.Graphics.DrawString(Text, Font, Brushes.White, GetLayoutLoader().GetResItemBounds("HeaderText"));
+            e.Graphics.DrawString("Title:", Font, Brushes.White, GetLayoutLoader().GetResItemBounds("TitleLabel"));
+            e.Graphics.DrawString("Description:", Font, Brushes.White, GetLayoutLoader().GetResItemBounds("DescriptionLabel"));
 
             if (m_bShouldUpdateItem)
-                e.Graphics.DrawString("Changelog:", Font, Brushes.White, new Rectangle(380, (int)flStandardHeight + 155, Width - 390, 16));
+                e.Graphics.DrawString("Changelog:", Font, Brushes.White, GetLayoutLoader().GetResItemBounds("PatchLogNoteLabel"));
 
             string imagePreview = (m_bHasChangedImagePath ? pszImagePath : null);
             m_pLabelFields[0].Text = imagePreview;

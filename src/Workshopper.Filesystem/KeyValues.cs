@@ -12,15 +12,22 @@ using Workshopper.Core;
 
 namespace Workshopper.Filesystem
 {
+    public struct KeyValueItem
+    {
+        public string key;
+        public string value;
+    }
+
     public class KeyValues : IDisposable
     {
         public string GetName() { return _name; }
+        public List<KeyValueItem> GetSubItems() { return _items; }
 
         bool _bHasParsedFully = false;
         int _iterator = 0;
         string _name = null;
         List<string> _internalData = null;
-        List<KeyValuesUtils.KeyValueItem> _items = null;
+        List<KeyValueItem> _items = null;
         List<KeyValues> _keys = null;
 
         public KeyValues()
@@ -110,11 +117,11 @@ namespace Workshopper.Filesystem
             }
         }
 
-        public int GetInt(string name, int defaultValue = 0)
+        public int GetInt(string name, int defaultValue = 0, int subStart = 0)
         {
             try
             {
-                return int.Parse(GetString(name, defaultValue.ToString()));
+                return int.Parse(GetString(name, defaultValue.ToString()).Substring(subStart));
             }
             catch
             {
@@ -122,11 +129,11 @@ namespace Workshopper.Filesystem
             }
         }
 
-        public float GetFloat(string name, float defaultValue = 0)
+        public float GetFloat(string name, float defaultValue = 0, int subStart = 0)
         {
             try
             {
-                return float.Parse(GetString(name, defaultValue.ToString()));
+                return float.Parse(GetString(name, defaultValue.ToString()).Substring(subStart));
             }
             catch
             {
@@ -134,11 +141,11 @@ namespace Workshopper.Filesystem
             }
         }
 
-        public double GetDouble(string name, double defaultValue = 0)
+        public double GetDouble(string name, double defaultValue = 0, int subStart = 0)
         {
             try
             {
-                return double.Parse(GetString(name, defaultValue.ToString()));
+                return double.Parse(GetString(name, defaultValue.ToString()).Substring(subStart));
             }
             catch
             {
@@ -146,11 +153,11 @@ namespace Workshopper.Filesystem
             }
         }
 
-        public long GetLong(string name, long defaultValue = 0)
+        public long GetLong(string name, long defaultValue = 0, int subStart = 0)
         {
             try
             {
-                return long.Parse(GetString(name, defaultValue.ToString()));
+                return long.Parse(GetString(name, defaultValue.ToString()).Substring(subStart));
             }
             catch
             {
@@ -160,7 +167,7 @@ namespace Workshopper.Filesystem
 
         private void Initialize()
         {
-            _items = new List<KeyValuesUtils.KeyValueItem>();
+            _items = new List<KeyValueItem>();
             _keys = new List<KeyValues>();
 
             bool bCouldParse = true;
@@ -215,7 +222,7 @@ namespace Workshopper.Filesystem
             for (int i = 0; i < _internalData.Count; i++)
             {
                 _bHasParsedFully = true;
-                KeyValuesUtils.KeyValueItem item;
+                KeyValueItem item;
                 item.key = GetKeyFromLine(_internalData[i]);
                 item.value = GetValueFromLine(_internalData[i]);
                 _items.Add(item);

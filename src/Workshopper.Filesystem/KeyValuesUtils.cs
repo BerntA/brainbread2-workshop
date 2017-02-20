@@ -14,12 +14,6 @@ namespace Workshopper.Filesystem
 {
     internal static class KeyValuesUtils
     {
-        public struct KeyValueItem
-        {
-            public string key;
-            public string value;
-        }
-
         public static List<string> ReadFileToList(string filePath)
         {
             try

@@ -11,6 +11,7 @@ using System.Text;
 using Steamworks;
 using System.IO;
 using Workshopper.UI;
+using Workshopper.Filesystem;
 
 namespace Workshopper.Core
 {
@@ -21,6 +22,7 @@ namespace Workshopper.Core
 
         public static MainForm GetMainForm() { return _mainFormAccessor; }
         public static bool HasInitializedSteam() { return m_bHasInitialized; }
+        public static void SetMainFormHandle(MainForm handle) { _mainFormAccessor = handle; }
 
         public static bool IsUsingCorrectAppID()
         {
@@ -56,23 +58,21 @@ namespace Workshopper.Core
             return bResult;
         }
 
-        public static bool InitSteamAPI(MainForm parent)
+        public static bool InitSteamAPI()
         {
             Directory.CreateDirectory(string.Format("{0}\\assets\\workshopper\\addons", Globals.GetAppPath()));
-
-            _mainFormAccessor = parent;
             Utils.Initialize();
 
             if (!IsUsingCorrectAppID())
             {
-                Utils.ShowWarningDialog("Invalid or non existant SteamAppid.txt!", null, true);
+                Utils.ShowWarningDialog(Localization.GetTextForToken("APP_INIT_FAIL_1"), null, true);
                 return false;
             }
 
             if (SteamAPI.Init())
                 m_bHasInitialized = true;
             else
-                Utils.ShowWarningDialog("Unable to initialize SteamAPI!", null, true);
+                Utils.ShowWarningDialog(Localization.GetTextForToken("APP_INIT_FAIL_2"), null, true);
 
             return m_bHasInitialized;
         }

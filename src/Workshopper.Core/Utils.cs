@@ -76,6 +76,20 @@ namespace Workshopper.Core
             }
         }
 
+        public static int GetMaxTagCategories() { return 4; }
+        public static int GetMaxTags() { return 6; }
+        public static string[][] GetAvailableTagsExtended = 
+        {
+            // Gamemodes:
+            new string[] { "Story Mode", "Objective", "Arena", "Elimination", "Deathmatch", "Custom" },
+            // Models
+            new string[] { "Weapons", "NPCs", "Survivors", "Props", "Misc", "Textures" },
+            // Sounds
+              new string[] { "Survivor Voicesets", "NPC Voicesets", "Weapon Sounds", "Misc Sounds" },
+            // UI
+             new string[] { "HUD", "VGUI", "Textures" },
+        };
+
         public static string[] GetAvailableTags = { "Objective", "Elimination", "Arena", "Weapons", "Survivors", "Sounds", "Textures", "Other" };
         public static string[] GetContestTags = { "Christmas", "Halloween" };
         public static void AddContestItems(ComboBox box)

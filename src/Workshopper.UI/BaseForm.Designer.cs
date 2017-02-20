@@ -32,7 +32,6 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(BaseForm));
             this.timFadeOut = new System.Windows.Forms.Timer(this.components);
             this.timFadeIn = new System.Windows.Forms.Timer(this.components);
-            this.timFrame = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
             // timFadeOut
@@ -44,11 +43,6 @@
             // 
             this.timFadeIn.Interval = 15;
             this.timFadeIn.Tick += new System.EventHandler(this.timFadeIn_Tick);
-            // 
-            // timFrame
-            // 
-            this.timFrame.Interval = 5;
-            this.timFrame.Tick += new System.EventHandler(this.timFrame_Tick);
             // 
             // BaseForm
             // 
@@ -72,7 +66,6 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "BaseForm";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.BaseForm_FormClosing);
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.BaseForm_FormClosed);
             this.ResumeLayout(false);
 
         }
@@ -81,6 +74,5 @@
 
         private System.Windows.Forms.Timer timFadeOut;
         private System.Windows.Forms.Timer timFadeIn;
-        private System.Windows.Forms.Timer timFrame;
     }
 }
