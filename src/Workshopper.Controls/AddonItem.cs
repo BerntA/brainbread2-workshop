@@ -21,7 +21,11 @@ namespace Workshopper.Controls
     public partial class AddonItem : UserControl
     {
         public PublishedFileId_t GetItemFileID() { return ulFileID; }
+        public delegate void ActivateItem(object sender, EventArgs e);
+        public event ActivateItem OnActivatedItem;
 
+        private static Image m_pProgressBar = Globals.GetTexture("bar");
+        private DynamicLayoutLoader _layout;
         private Color colOverlay;
         private bool m_bActive;
         private bool m_bWhitelisted;
@@ -32,6 +36,7 @@ namespace Workshopper.Controls
         private int m_iVisibility;
         private string pszDate;
         private ImageButton btnUpdate;
+        private Image m_pImagePreview;
 
         // Upload Definitions:
         private bool m_bUploading;
@@ -39,14 +44,16 @@ namespace Workshopper.Controls
 
         public AddonItem(string title, string description, string tags, int visibility, PublishedFileId_t fileID, string lastChangeDate)
         {
+            m_pImagePreview = Globals.GetTexture(fileID.ToString(), "jpg");
             InitializeComponent();
+            _layout = DynamicLayoutLoader.LoadLayoutForControl("addonitem", this, true);
             pszName = title;
             pszDescription = description;
             pszTags = tags;
             m_iVisibility = visibility;
             ulFileID = fileID;
             pszDate = lastChangeDate;
-            colOverlay = Color.FromArgb(100, 25, 25, 25);
+            colOverlay = _layout.GetResItemBgColor("Overlay");
             m_bActive = false;
             m_bUploading = false;
             btnUpdate = null;
@@ -91,7 +98,7 @@ namespace Workshopper.Controls
         {
             btnUpdate = new ImageButton("update", "update_hover");
             btnUpdate.Parent = this;
-            btnUpdate.Bounds = new Rectangle(Width - 72, Height - 30, 70, 24);
+            btnUpdate.Bounds = _layout.GetResItemBounds("UpdateButton");
             btnUpdate.Click += new EventHandler(OnClickUpdate);
             btnUpdate.MouseEnter += new EventHandler(OnEnterUpdateButton);
             btnUpdate.MouseLeave += new EventHandler(OnLeaveUpdateButton);
@@ -106,9 +113,9 @@ namespace Workshopper.Controls
             m_bActive = value;
 
             if (m_bActive)
-                colOverlay = Color.FromArgb(100, 150, 25, 25);
+                colOverlay = _layout.GetResItemFgColor("Overlay");
             else
-                colOverlay = Color.FromArgb(100, 25, 25, 25);
+                colOverlay = _layout.GetResItemBgColor("Overlay");
 
             if (ClientRectangle.Contains(PointToClient(Control.MousePosition)))
                 DoRollover(true);
@@ -141,9 +148,9 @@ namespace Workshopper.Controls
                 return;
 
             if (!bOver)
-                colOverlay = Color.FromArgb(100, 25, 25, 25);
+                colOverlay = _layout.GetResItemBgColor("Overlay");
             else
-                colOverlay = Color.FromArgb(100, 150, 25, 25);
+                colOverlay = _layout.GetResItemFgColor("Overlay");
 
             Invalidate();
         }
@@ -163,17 +170,19 @@ namespace Workshopper.Controls
         protected override void OnClick(EventArgs e)
         {
             base.OnClick(e);
-            SteamHandler.GetMainForm()._addonList.ActivateItem(this, !m_bActive);
+            Activate(!m_bActive);
+            if (OnActivatedItem != null)
+                OnActivatedItem(this, new EventArgs());
         }
 
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
 
-            e.Graphics.DrawImage(Globals.GetTexture(ulFileID.ToString(), "jpg"), new Rectangle(1, 1, Height - 2, Height - 2));
+            e.Graphics.DrawImage(m_pImagePreview, _layout.GetResItemBounds("ImagePreview"));
 
             if (m_bWhitelisted)
-                e.Graphics.DrawImage(Properties.Resources.verified, new Rectangle(Height - 18, Height - 18, 18, 18));
+                e.Graphics.DrawImage(Properties.Resources.verified, _layout.GetResItemBounds("WhitelistedIcon"));
 
             e.Graphics.FillRectangle(new SolidBrush(colOverlay), new Rectangle(0, 0, Width, Height));
             e.Graphics.DrawRectangle(Pens.Black, new Rectangle(1, 1, Height - 2, Height - 2));
@@ -203,28 +212,29 @@ namespace Workshopper.Controls
                 else if (uploadStatus == EItemUpdateStatus.k_EItemUpdateStatusCommittingChanges)
                     statusString = "Committing Changes...";
 
-                e.Graphics.DrawString(statusString, new Font("Times New Roman", 11, FontStyle.Bold), new SolidBrush(Color.White), new Rectangle(Height + 2, 1, Width - Height - 2, 30), formatter);
+                e.Graphics.DrawString(statusString, new Font("Times New Roman", 11, FontStyle.Bold), new SolidBrush(Color.White), _layout.GetResItemBounds("ProgressLabel"), formatter);
                 if (bDrawProgress && (punBytesTotal > 0))
                 {
-                    e.Graphics.DrawImage(Globals.GetTexture("bar"), new Rectangle(Height + 2, 33, Width - Height - 24, 16));
+                    Rectangle progressBounds = _layout.GetResItemBounds("ProgressBar");
+                    e.Graphics.DrawImage(m_pProgressBar, progressBounds);
 
                     double flPercent = ((double)punBytesProcessed) / ((double)punBytesTotal);
-                    double flWide = (double)(Width - Height - 24) * flPercent;
-                    e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(145, 200, 15, 15)), new Rectangle(Height + 2, 33, (int)flWide, 16));
-                    e.Graphics.DrawRectangle(Pens.Black, new Rectangle(Height + 2, 33, Width - Height - 24, 16));
+                    double flWide = ((double)(progressBounds.Width)) * flPercent;
+                    e.Graphics.FillRectangle(new SolidBrush(_layout.GetResItemFgColor("ProgressBar")), new Rectangle(progressBounds.X, progressBounds.Y, (int)flWide, progressBounds.Height));
+                    e.Graphics.DrawRectangle(Pens.Black, progressBounds);
                 }
 
                 return;
             }
 
-            e.Graphics.DrawString(pszName, new Font("Times New Roman", 20, FontStyle.Bold), new SolidBrush(Color.White), new Rectangle(Height + 2, 1, Width - Height - 2, 30), formatter);
+            e.Graphics.DrawString(pszName, new Font("Times New Roman", 20, FontStyle.Bold), new SolidBrush(Color.White), _layout.GetResItemBounds("TitleLabel"), formatter);
             if (m_bWhitelisted)
-                e.Graphics.DrawString("Your map is whitelisted!", new Font("Times New Roman", 10, FontStyle.Regular), new SolidBrush(Color.Green), new Rectangle(Height + 3, 33, Width - Height - 3, 20), formatter);
+                e.Graphics.DrawString("Your map is whitelisted!", new Font("Times New Roman", 10, FontStyle.Regular), new SolidBrush(Color.Green), _layout.GetResItemBounds("WhitelistLabel"), formatter);
 
             formatter.LineAlignment = StringAlignment.Center;
             formatter.Alignment = StringAlignment.Far;
 
-            e.Graphics.DrawString(pszDate, new Font("Times New Roman", 10, FontStyle.Bold), new SolidBrush(Color.White), new Rectangle(Width - 142, 2, 140, 20), formatter);
+            e.Graphics.DrawString(pszDate, new Font("Times New Roman", 10, FontStyle.Bold), new SolidBrush(Color.White), _layout.GetResItemBounds("DateLabel"), formatter);
         }
 
         private void timFrame_Tick(object sender, EventArgs e)

@@ -13,6 +13,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Workshopper.Core;
+using Workshopper.UI;
 
 namespace Workshopper.Controls
 {
@@ -25,7 +26,10 @@ namespace Workshopper.Controls
             STATE_ACTIVATED = 2,
         }
 
-        public bool IsItemChecked() { return (m_iItemState >= 2); }
+        private static Image m_pImgChecked = Globals.GetTexture("CBox_Check");
+        private static Image m_pImgUnChecked = Globals.GetTexture("CBox_UnCheck");
+
+        public bool IsItemChecked() { return (m_iItemState >= (int)CheckBoxStates.STATE_ACTIVATED); }
         public void ActiviateItem(bool value)
         {
             if (value)
@@ -35,10 +39,13 @@ namespace Workshopper.Controls
 
             Invalidate();
         }
+
         public string GetText() { return pszText; }
+        public void SetText(string text) { pszText = text; Invalidate(); }
 
         private int m_iItemState;
         private string pszText;
+
         public CheckBoxItem(string text)
         {
             InitializeComponent();
@@ -67,7 +74,7 @@ namespace Workshopper.Controls
         }
 
         protected override void OnClick(EventArgs e)
-        {           
+        {
             if (m_iItemState != (int)CheckBoxStates.STATE_ACTIVATED)
                 m_iItemState = (int)CheckBoxStates.STATE_ACTIVATED;
             else
@@ -82,16 +89,13 @@ namespace Workshopper.Controls
         {
             base.OnPaint(e);
 
-            if (m_iItemState == (int)CheckBoxStates.STATE_ACTIVATED)
-                e.Graphics.DrawImage(Globals.GetTexture("CBox_Check"), new Rectangle(0, 0, Height, Height));
-            else
-                e.Graphics.DrawImage(Globals.GetTexture("CBox_UnCheck"), new Rectangle(0, 0, Height, Height));
+            e.Graphics.DrawImage(((m_iItemState == (int)CheckBoxStates.STATE_ACTIVATED) ? m_pImgChecked : m_pImgUnChecked), new Rectangle(0, 0, Height, Height));
 
             StringFormat format = new StringFormat();
             format.LineAlignment = StringAlignment.Center;
             format.Alignment = StringAlignment.Near;
 
-            e.Graphics.DrawString(pszText, Font, (m_iItemState == 0 ? Brushes.White : Brushes.DarkRed), new Rectangle(Height, 0, Width - Height, Height), format);
+            e.Graphics.DrawString(pszText, Font, (m_iItemState == ((int)CheckBoxStates.STATE_DEF) ? Brushes.White : Brushes.DarkRed), new Rectangle(Height, 0, Width - Height, Height), format);
         }
     }
 }

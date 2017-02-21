@@ -14,6 +14,7 @@ using System.Text;
 using System.Windows.Forms;
 using Steamworks;
 using Workshopper.Core;
+using Workshopper.UI;
 
 namespace Workshopper.Controls
 {
@@ -28,44 +29,36 @@ namespace Workshopper.Controls
         {
             AddonItem item = new AddonItem(title, description, tags, visibility, fileID, lastChangeDate);
             item.Parent = this;
+            item.OnActivatedItem += new AddonItem.ActivateItem(OnActivatedItem);
             item.Bounds = new Rectangle(2, 2 + (60 * GetItemNumber()), Width - 2, 60);
             item.SetupItem();
         }
 
-        public void UpdateItem(PublishedFileId_t fileID, string title, string description, string tags, int visibility, string lastChangeDate)
+        public AddonItem GetAddonItemForFileID(PublishedFileId_t fileID)
         {
-            AddonItem pItem = null;
             foreach (Control control in Controls)
             {
                 if (control is AddonItem)
                 {
-                    if (((AddonItem)control).GetItemFileID() == fileID)
-                    {
-                        pItem = ((AddonItem)control);
-                        break;
-                    }
+                    AddonItem pItem = ((AddonItem)control);
+                    if (pItem.GetItemFileID() == fileID)
+                        return pItem;
                 }
             }
 
+            return null;
+        }
+
+        public void UpdateItem(PublishedFileId_t fileID, string title, string description, string tags, int visibility, string lastChangeDate)
+        {
+            AddonItem pItem = GetAddonItemForFileID(fileID);
             if (pItem != null)
                 pItem.UpdateItem(title, description, tags, visibility, lastChangeDate);
         }
 
         public void StartUploading(PublishedFileId_t fileID, UGCUpdateHandle_t handle)
         {
-            AddonItem pItem = null;
-            foreach (Control control in Controls)
-            {
-                if (control is AddonItem)
-                {
-                    if (((AddonItem)control).GetItemFileID() == fileID)
-                    {
-                        pItem = ((AddonItem)control);
-                        break;
-                    }
-                }
-            }
-
+            AddonItem pItem = GetAddonItemForFileID(fileID);
             if (pItem != null)
                 pItem.StartUploading(handle);
         }
@@ -88,25 +81,15 @@ namespace Workshopper.Controls
             }
         }
 
-        public void ActivateItem(AddonItem item, bool value)
+        public void ActivateItem(AddonItem item)
         {
             foreach (Control control in Controls)
             {
                 if (control is AddonItem)
                 {
                     AddonItem controlItem = ((AddonItem)control);
-                    if (controlItem.IsActive())
+                    if (controlItem.IsActive() && (controlItem != item))
                         controlItem.Activate(false);
-                }
-            }
-
-            foreach (Control control in Controls)
-            {
-                if (control is AddonItem)
-                {
-                    AddonItem controlItem = ((AddonItem)control);
-                    if (control == item)
-                        controlItem.Activate(value);
                 }
             }
         }
@@ -130,6 +113,12 @@ namespace Workshopper.Controls
             }
 
             return --iResult;
+        }
+
+        private void OnActivatedItem(object sender, EventArgs e)
+        {
+            if (sender is AddonItem)
+                ActivateItem(((AddonItem)sender));
         }
     }
 }

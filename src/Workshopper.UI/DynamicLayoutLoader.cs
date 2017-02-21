@@ -36,13 +36,16 @@ namespace Workshopper.UI
             }
         }
 
-        public static DynamicLayoutLoader LoadLayoutForControl(string layoutFile, Control ctrl)
+        public static DynamicLayoutLoader LoadLayoutForControl(string layoutFile, Control ctrl, bool bSuppressLoadingMain = false)
         {
             foreach (DynamicLayoutLoader layoutItem in _layoutObjects.ToArray())
             {
                 if (layoutItem.GetName().Equals(layoutFile, StringComparison.CurrentCulture))
                 {
                     layoutItem.LoadLayoutForControl(ctrl.Controls);
+                    if (!bSuppressLoadingMain)
+                        layoutItem.LoadSettingsForControl(ctrl, layoutItem.GetMainResItem());
+
                     return layoutItem;
                 }
             }
@@ -84,41 +87,6 @@ namespace Workshopper.UI
         }
 
         virtual public string GetName() { return _name; }
-
-        virtual public void AddResItem(KeyValues pkv, bool bMainOverride = false)
-        {
-            if (bMainOverride)
-            {
-                _mainResourceItem = new CustomResourceItem(
-    "",
-    new Rectangle(
-        GetControlCoordinate(null, pkv, "xpos"),
-    GetControlCoordinate(null, pkv, "ypos", true),
-    pkv.GetInt("wide"),
-     pkv.GetInt("tall")
-     ),
-     GetColorForString(pkv.GetString("FgColor")),
-     GetColorForString(pkv.GetString("BgColor"))
-    );
-            }
-            else
-            {
-                CustomResourceItem customItem = new CustomResourceItem(
-                    pkv.GetName(),
-                    new Rectangle(
-                        GetControlCoordinate(null, pkv, "xpos"),
-                    GetControlCoordinate(null, pkv, "ypos", true),
-                    pkv.GetInt("wide"),
-                     pkv.GetInt("tall")
-                     ),
-                     GetColorForString(pkv.GetString("FgColor")),
-                     GetColorForString(pkv.GetString("BgColor"))
-                    );
-
-                _childResourceItems.Add(customItem);
-            }
-        }
-
         virtual public CustomResourceItem GetMainResItem() { return _mainResourceItem; }
         virtual public CustomResourceItem GetChildResItem(string name)
         {
@@ -158,7 +126,41 @@ namespace Workshopper.UI
             return Color.Empty;
         }
 
-        virtual public void LoadLayoutForControl(System.Windows.Forms.Control.ControlCollection controls)
+        virtual protected void AddResItem(KeyValues pkv, bool bMainOverride = false)
+        {
+            if (bMainOverride)
+            {
+                _mainResourceItem = new CustomResourceItem(
+    "",
+    new Rectangle(
+        GetControlCoordinate(null, pkv, "xpos"),
+    GetControlCoordinate(null, pkv, "ypos", true),
+    pkv.GetInt("wide"),
+     pkv.GetInt("tall")
+     ),
+     GetColorForString(pkv.GetString("FgColor")),
+     GetColorForString(pkv.GetString("BgColor"))
+    );
+            }
+            else
+            {
+                CustomResourceItem customItem = new CustomResourceItem(
+                    pkv.GetName(),
+                    new Rectangle(
+                        GetControlCoordinate(null, pkv, "xpos"),
+                    GetControlCoordinate(null, pkv, "ypos", true),
+                    pkv.GetInt("wide"),
+                     pkv.GetInt("tall")
+                     ),
+                     GetColorForString(pkv.GetString("FgColor")),
+                     GetColorForString(pkv.GetString("BgColor"))
+                    );
+
+                _childResourceItems.Add(customItem);
+            }
+        }
+
+        virtual protected void LoadLayoutForControl(System.Windows.Forms.Control.ControlCollection controls)
         {
             bool bHasAtLeastOneItem = false;
             foreach (Control ctrl in controls)

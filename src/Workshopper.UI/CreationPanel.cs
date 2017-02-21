@@ -37,6 +37,7 @@ namespace Workshopper.UI
         private FolderBrowserDialog _folderDialog;
         private bool m_bShouldUpdateItem;
         private bool m_bHasChangedImagePath;
+        private Image m_pImgPreview;
 
         public CreationPanel()
         {
@@ -173,8 +174,7 @@ namespace Workshopper.UI
 
             // Set the stuff:
             pszContentPath = null;
-            pszImagePath = string.Format("{0}\\workshopper\\addons\\{1}.jpg", Globals.GetTexturePath(), fileID.ToString());
-
+            SetImagePreview(string.Format("{0}\\workshopper\\addons\\{1}.jpg", Globals.GetTexturePath(), fileID.ToString()));
             m_pTitle.Text = title;
             m_pDescription.Text = description;
             itemUniqueID = fileID;
@@ -412,8 +412,26 @@ namespace Workshopper.UI
 
         private void OnSelectImage(object sender, CancelEventArgs e)
         {
-            pszImagePath = _fileDialog.FileName;
+            SetImagePreview(_fileDialog.FileName);
             Invalidate();
+        }
+
+        private void SetImagePreview(string path)
+        {
+            pszImagePath = path;
+            if (pszImagePath != null && File.Exists(pszImagePath))
+                m_pImgPreview = Image.FromFile(pszImagePath);
+        }
+
+        protected override void OnFormExit()
+        {
+            if ((m_pImgPreview != null) && (m_pImgPreview != Properties.Resources.unknown))
+            {
+                m_pImgPreview.Dispose();
+                m_pImgPreview = Properties.Resources.unknown;
+            }
+
+            base.OnFormExit();
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -421,8 +439,8 @@ namespace Workshopper.UI
             base.OnPaint(e);
 
             Image render = Properties.Resources.unknown;
-            if (pszImagePath != null && File.Exists(pszImagePath))
-                render = Image.FromFile(pszImagePath);
+            if (m_pImgPreview != null)
+                render = m_pImgPreview;
 
             e.Graphics.FillRectangle(new SolidBrush(GetLayoutLoader().GetResItemBgColor("Header")), GetLayoutLoader().GetResItemBounds("Header"));
             e.Graphics.DrawImage(render, GetLayoutLoader().GetResItemBounds("ImagePreview"));

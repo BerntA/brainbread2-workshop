@@ -19,13 +19,14 @@ namespace Workshopper.Controls
     public partial class ImageButton : UserControl
     {
         private bool m_bRollover;
-        private string pszTextureDef;
-        private string pszTextureOver;
-        public ImageButton(string texture, string textureRollover)
+        private Image m_pTextureDefault;
+        private Image m_pTextureOver;
+        public ImageButton(string textureDefault, string textureRollover)
         {
             m_bRollover = false;
-            pszTextureDef = texture;
-            pszTextureOver = textureRollover;
+
+            m_pTextureDefault = Globals.GetTexture(textureDefault);
+            m_pTextureOver = Globals.GetTexture(textureRollover);
 
             InitializeComponent();
         }
@@ -47,9 +48,7 @@ namespace Workshopper.Controls
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
-
-            Image renderImage = m_bRollover ? Globals.GetTexture(pszTextureOver) : Globals.GetTexture(pszTextureDef);
-            e.Graphics.DrawImage(renderImage, 0, 0, Width, Height);
+            e.Graphics.DrawImage((m_bRollover ? m_pTextureOver : m_pTextureDefault), 0, 0, Width, Height);
         }
     }
 }
