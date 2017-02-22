@@ -95,6 +95,18 @@
     <Compile Include="Workshopper.Controls\ImageButton.Designer.cs">
       <DependentUpon>ImageButton.cs</DependentUpon>
     </Compile>
+    <Compile Include="Workshopper.Controls\ItemList.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Workshopper.Controls\ItemList.designer.cs">
+      <DependentUpon>ItemList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Workshopper.Controls\ListButton.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Workshopper.Controls\ListButton.designer.cs">
+      <DependentUpon>ListButton.cs</DependentUpon>
+    </Compile>
     <Compile Include="Workshopper.Controls\TextButton.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -148,6 +160,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Workshopper.Controls\ImageButton.resx">
       <DependentUpon>ImageButton.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Workshopper.Controls\ItemList.resx">
+      <DependentUpon>ItemList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Workshopper.Controls\ListButton.resx">
+      <DependentUpon>ListButton.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Workshopper.Controls\TextButton.resx">
       <DependentUpon>TextButton.cs</DependentUpon>

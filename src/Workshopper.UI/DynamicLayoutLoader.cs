@@ -80,7 +80,7 @@ namespace Workshopper.UI
         protected CustomResourceItem _mainResourceItem;
         private string _name;
 
-        public DynamicLayoutLoader(string name)
+        private DynamicLayoutLoader(string name)
         {
             _name = name;
             _childResourceItems = new List<CustomResourceItem>();

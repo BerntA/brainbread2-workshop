@@ -28,17 +28,19 @@ namespace Workshopper.UI
             InitializeComponent();
             Opacity = 0;
 
-            TextButton btnCreate = new TextButton(Localization.GetTextForToken("MAIN_CREATE"), Color.FromArgb(255, 255, 255), Color.FromArgb(235, 20, 20));
+            LoadLayout("main");
+
+            TextButton btnCreate = new TextButton(Localization.GetTextForToken("MAIN_CREATE"), GetLayoutLoader().GetResItemBgColor("ButtonColors"), GetLayoutLoader().GetResItemFgColor("ButtonColors"));
             btnCreate.Parent = this;
             btnCreate.Click += new EventHandler(OnClickCreate);
             btnCreate.Name = "CreateButton";
 
-            TextButton btnHelp = new TextButton(Localization.GetTextForToken("MAIN_HELP"), Color.FromArgb(255, 255, 255), Color.FromArgb(235, 20, 20));
+            TextButton btnHelp = new TextButton(Localization.GetTextForToken("MAIN_HELP"), GetLayoutLoader().GetResItemBgColor("ButtonColors"), GetLayoutLoader().GetResItemFgColor("ButtonColors"));
             btnHelp.Parent = this;
             btnHelp.Click += new EventHandler(OnClickHelp);
             btnHelp.Name = "HelpButton";
 
-            TextButton btnRefresh = new TextButton(Localization.GetTextForToken("MAIN_REFRESH"), Color.FromArgb(255, 255, 255), Color.FromArgb(235, 20, 20));
+            TextButton btnRefresh = new TextButton(Localization.GetTextForToken("MAIN_REFRESH"), GetLayoutLoader().GetResItemBgColor("ButtonColors"), GetLayoutLoader().GetResItemFgColor("ButtonColors"));
             btnRefresh.Parent = this;
             btnRefresh.Click += new EventHandler(OnClickRefresh);
             btnRefresh.Name = "RefreshButton";
@@ -47,7 +49,7 @@ namespace Workshopper.UI
             _addonList.Parent = this;
             _addonList.Name = "AddonList";
 
-            LoadLayout("main");
+            LoadLayout("main"); // reload.
         }
 
         private void OnClickRefresh(object sender, EventArgs e)

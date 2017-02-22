@@ -40,15 +40,15 @@
 	
 	"WhitelistedIcon"
 	{
-		"xpos" "42"
-		"ypos" "42"
+		"xpos" "63"
+		"ypos" "34"
 		"wide" "18"
 		"tall" "18"	
 	}
 	
 	"WhitelistLabel"
 	{
-		"xpos" "63"
+		"xpos" "81"
 		"ypos" "33"
 		"wide" "535"
 		"tall" "20"	

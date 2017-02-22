@@ -15,19 +15,17 @@ using System.Windows.Forms;
 using Steamworks;
 using Workshopper.Core;
 using Workshopper.UI;
+using System.Diagnostics;
 
 namespace Workshopper.Controls
 {
     public partial class AddonItem : UserControl
     {
         public PublishedFileId_t GetItemFileID() { return ulFileID; }
-        public delegate void ActivateItem(object sender, EventArgs e);
-        public event ActivateItem OnActivatedItem;
 
         private static Image m_pProgressBar = Globals.GetTexture("bar");
         private DynamicLayoutLoader _layout;
         private Color colOverlay;
-        private bool m_bActive;
         private bool m_bWhitelisted;
         private PublishedFileId_t ulFileID;
         private string pszName;
@@ -54,7 +52,6 @@ namespace Workshopper.Controls
             ulFileID = fileID;
             pszDate = lastChangeDate;
             colOverlay = _layout.GetResItemBgColor("Overlay");
-            m_bActive = false;
             m_bUploading = false;
             btnUpdate = null;
             timFrame.Enabled = false;
@@ -107,22 +104,6 @@ namespace Workshopper.Controls
                 btnUpdate.Visible = false;
         }
 
-        public bool IsActive() { return m_bActive; }
-        public void Activate(bool value)
-        {
-            m_bActive = value;
-
-            if (m_bActive)
-                colOverlay = _layout.GetResItemFgColor("Overlay");
-            else
-                colOverlay = _layout.GetResItemBgColor("Overlay");
-
-            if (ClientRectangle.Contains(PointToClient(Control.MousePosition)))
-                DoRollover(true);
-
-            Invalidate();
-        }
-
         private void OnClickUpdate(object sender, EventArgs e)
         {
             if (m_bUploading)
@@ -144,9 +125,6 @@ namespace Workshopper.Controls
 
         private void DoRollover(bool bOver = false)
         {
-            if (m_bActive)
-                return;
-
             if (!bOver)
                 colOverlay = _layout.GetResItemBgColor("Overlay");
             else
@@ -167,12 +145,12 @@ namespace Workshopper.Controls
             DoRollover();
         }
 
-        protected override void OnClick(EventArgs e)
+        protected override void OnDoubleClick(EventArgs e)
         {
-            base.OnClick(e);
-            Activate(!m_bActive);
-            if (OnActivatedItem != null)
-                OnActivatedItem(this, new EventArgs());
+            base.OnDoubleClick(e);
+
+            if (!m_bUploading)
+                Process.Start(string.Format("http://steamcommunity.com/sharedfiles/filedetails/?id={0}", ulFileID));
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -180,10 +158,6 @@ namespace Workshopper.Controls
             base.OnPaint(e);
 
             e.Graphics.DrawImage(m_pImagePreview, _layout.GetResItemBounds("ImagePreview"));
-
-            if (m_bWhitelisted)
-                e.Graphics.DrawImage(Properties.Resources.verified, _layout.GetResItemBounds("WhitelistedIcon"));
-
             e.Graphics.FillRectangle(new SolidBrush(colOverlay), new Rectangle(0, 0, Width, Height));
             e.Graphics.DrawRectangle(Pens.Black, new Rectangle(1, 1, Height - 2, Height - 2));
 
@@ -229,7 +203,10 @@ namespace Workshopper.Controls
 
             e.Graphics.DrawString(pszName, new Font("Times New Roman", 20, FontStyle.Bold), new SolidBrush(Color.White), _layout.GetResItemBounds("TitleLabel"), formatter);
             if (m_bWhitelisted)
+            {
+                e.Graphics.DrawImage(Properties.Resources.verified, _layout.GetResItemBounds("WhitelistedIcon"));
                 e.Graphics.DrawString("Your map is whitelisted!", new Font("Times New Roman", 10, FontStyle.Regular), new SolidBrush(Color.Green), _layout.GetResItemBounds("WhitelistLabel"), formatter);
+            }
 
             formatter.LineAlignment = StringAlignment.Center;
             formatter.Alignment = StringAlignment.Far;

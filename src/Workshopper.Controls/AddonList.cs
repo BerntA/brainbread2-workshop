@@ -23,14 +23,29 @@ namespace Workshopper.Controls
         public AddonList()
         {
             InitializeComponent();
+
+            this.AutoScroll = false;
+            this.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
         }
 
         public void AddItem(string title, string description, string tags, int visibility, PublishedFileId_t fileID, string lastChangeDate)
         {
             AddonItem item = new AddonItem(title, description, tags, visibility, fileID, lastChangeDate);
             item.Parent = this;
-            item.OnActivatedItem += new AddonItem.ActivateItem(OnActivatedItem);
-            item.Bounds = new Rectangle(2, 2 + (60 * GetItemNumber()), Width - 2, 60);
+
+            int sizeY = (Controls.Count * 60) - Width;
+            if (sizeY > 0)
+            {
+                item.Bounds = new Rectangle(0, (60 * GetItemNumber()), Width - SystemInformation.VerticalScrollBarWidth, 60);
+                this.AutoScroll = true;
+                this.SetAutoScrollMargin(0, sizeY);
+            }
+            else
+            {
+                item.Bounds = new Rectangle(0, (60 * GetItemNumber()), Width, 60);
+                this.AutoScroll = false;
+            }
+
             item.SetupItem();
         }
 
@@ -81,19 +96,6 @@ namespace Workshopper.Controls
             }
         }
 
-        public void ActivateItem(AddonItem item)
-        {
-            foreach (Control control in Controls)
-            {
-                if (control is AddonItem)
-                {
-                    AddonItem controlItem = ((AddonItem)control);
-                    if (controlItem.IsActive() && (controlItem != item))
-                        controlItem.Activate(false);
-                }
-            }
-        }
-
         public void RemoveItems()
         {
             for (int i = (Controls.Count - 1); i >= 0; i--)
@@ -113,12 +115,6 @@ namespace Workshopper.Controls
             }
 
             return --iResult;
-        }
-
-        private void OnActivatedItem(object sender, EventArgs e)
-        {
-            if (sender is AddonItem)
-                ActivateItem(((AddonItem)sender));
         }
     }
 }

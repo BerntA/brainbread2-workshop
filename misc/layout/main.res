@@ -62,4 +62,10 @@
 		"wide" "50"
 		"tall" "21"
 	}
+	
+	"ButtonColors"
+	{
+		"FgColor" "235 20 20 255"
+		"BgColor" "255 255 255 255"
+	}
 }
