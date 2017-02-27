@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using Workshopper.Controls;
 
 namespace Workshopper.Core
 {
@@ -76,9 +77,10 @@ namespace Workshopper.Core
             }
         }
 
-        public static int GetMaxTagCategories() { return 4; }
+        public static int GetMaxTagCategories() { return GetAvailableTagCategories.Count(); }
         public static int GetMaxTags() { return 6; }
-        public static string[][] GetAvailableTagsExtended = 
+        public static string[] GetAvailableTagCategories = { "Gamemode", "Model", "Sound", "UI" };
+        public static string[][] GetAvailableTags = 
         {
             // Gamemodes:
             new string[] { "Story Mode", "Objective", "Arena", "Elimination", "Deathmatch", "Custom" },
@@ -90,7 +92,38 @@ namespace Workshopper.Core
              new string[] { "HUD", "VGUI", "Textures" },
         };
 
-        public static string[] GetAvailableTags = { "Objective", "Elimination", "Arena", "Weapons", "Survivors", "Sounds", "Textures", "Other" };
+        public static void AddCategoriesToItemList(ItemList list)
+        {
+            for (int i = 0; i < GetMaxTagCategories(); i++)
+                list.AddItem(GetAvailableTagCategories[i]);
+        }
+
+        public static int GetCategoryIndexForTag(string tag)
+        {
+            for (int i = 0; i < GetMaxTagCategories(); i++)
+            {
+                int categorySize = GetAvailableTags[i].Count();
+                for (int x = 0; x < categorySize; x++)
+                {
+                    if (GetAvailableTags[i][x].Equals(tag, StringComparison.CurrentCulture))
+                        return i;
+                }
+            }
+
+            return 0;
+        }
+
+        public static int GetCategoryIndexForCatergoryName(string category)
+        {
+            for (int i = 0; i < GetMaxTagCategories(); i++)
+            {
+                if (GetAvailableTagCategories[i].Equals(category, StringComparison.CurrentCulture))
+                    return i;
+            }
+
+            return 0;
+        }
+
         public static string[] GetContestTags = { "Christmas", "Halloween" };
         public static void AddContestItems(ComboBox box)
         {

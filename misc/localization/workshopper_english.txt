@@ -5,4 +5,5 @@
 	"MAIN_CREATE" "Create"
 	"MAIN_HELP" "Help"
 	"MAIN_REFRESH" "Refresh"
+	"CREATION_WORKSHOP_CATEORY" "Select a workshop type"
 }

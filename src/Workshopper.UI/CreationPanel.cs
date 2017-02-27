@@ -17,18 +17,21 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Workshopper.Controls;
 using Workshopper.Core;
+using Workshopper.Filesystem;
 
 namespace Workshopper.UI
 {
     public partial class CreationPanel : BaseForm
     {
-        private RadioButton[] m_pVisibilityChoices;
         private TextBox m_pTitle;
-        private RichTextBox m_pPatchNotes;
         private RichTextBox m_pDescription;
+        private RichTextBox m_pPatchNotes;
         private TextBox[] m_pLabelFields;
         private CheckBoxItem[] m_pCheckBox;
+        private RadioButton[] m_pVisibilityChoices;
         private ComboBox m_pContestTags;
+        private ListButton m_pItemCategoryButton;
+        private ItemList m_pItemCategoryList;
         private List<string> pszTagList;
         private string pszImagePath;
         private string pszContentPath;
@@ -92,13 +95,14 @@ namespace Workshopper.UI
             m_pLabelFields[0].Name = "ImagePathLabel";
             m_pLabelFields[1].Name = "FilePathLabel";
 
-            m_pCheckBox = new CheckBoxItem[8];
-            for (int i = 0; i < 8; i++)
+            m_pCheckBox = new CheckBoxItem[Utils.GetMaxTags()];
+            for (int i = 0; i < Utils.GetMaxTags(); i++)
             {
-                m_pCheckBox[i] = new CheckBoxItem(Utils.GetAvailableTags[i]);
+                m_pCheckBox[i] = new CheckBoxItem("");
                 m_pCheckBox[i].Parent = this;
                 m_pCheckBox[i].Click += new EventHandler(OnTagClicked);
                 m_pCheckBox[i].Name = string.Format("CheckBox{0}", (i + 1));
+                m_pCheckBox[i].Visible = false;
             }
 
             m_pContestTags = new ComboBox();
@@ -157,8 +161,21 @@ namespace Workshopper.UI
             m_pVisibilityChoices[0].Text = "Public";
             m_pVisibilityChoices[1].Text = "Private";
             m_pVisibilityChoices[2].Text = "Hidden";
-
             m_pVisibilityChoices[0].Select();
+
+            m_pItemCategoryButton = new ListButton();
+            m_pItemCategoryButton.Parent = this;
+            m_pItemCategoryButton.Name = "CategoryButton";
+            m_pItemCategoryButton.LabelTxt = Localization.GetTextForToken("CREATION_WORKSHOP_CATEORY");
+            m_pItemCategoryButton.Click += new EventHandler(OnCategoryButtonClick);
+
+            m_pItemCategoryList = new ItemList();
+            m_pItemCategoryList.Parent = this;
+            m_pItemCategoryList.Name = "CategoryList";
+            m_pItemCategoryList.bUseFixedWidth = false;
+            m_pItemCategoryList.Visible = false;
+            m_pItemCategoryList.OnItemClick += new EventHandler(OnCategoryListClick);
+            Utils.AddCategoriesToItemList(m_pItemCategoryList);
 
             LoadLayout("creationmenu");
 
@@ -188,31 +205,16 @@ namespace Workshopper.UI
 
             GetTagsFromString(tags);
 
+            int tagCategory = Utils.GetCategoryIndexForTag(pszTagList[0]); // Figure out which category this item used from the first tag itself, assuming that all tags have diff. text.
+            SetupTagList(Utils.GetAvailableTagCategories[tagCategory]);
+
             for (int i = 0; i < pszTagList.Count(); i++)
             {
-                if (pszTagList[i] == "Objective")
-                    m_pCheckBox[0].ActiviateItem(true);
-
-                else if (pszTagList[i] == "Elimination")
-                    m_pCheckBox[1].ActiviateItem(true);
-
-                else if (pszTagList[i] == "Arena")
-                    m_pCheckBox[2].ActiviateItem(true);
-
-                else if (pszTagList[i] == "Weapons")
-                    m_pCheckBox[3].ActiviateItem(true);
-
-                else if (pszTagList[i] == "Survivors")
-                    m_pCheckBox[4].ActiviateItem(true);
-
-                else if (pszTagList[i] == "Sounds")
-                    m_pCheckBox[5].ActiviateItem(true);
-
-                else if (pszTagList[i] == "Textures")
-                    m_pCheckBox[6].ActiviateItem(true);
-
-                else if (pszTagList[i] == "Other")
-                    m_pCheckBox[7].ActiviateItem(true);
+                for (int x = 0; x < Utils.GetMaxTags(); x++)
+                {
+                    if (pszTagList[i].Equals(m_pCheckBox[x].GetText(), StringComparison.CurrentCulture))
+                        m_pCheckBox[x].ActiviateItem(true);
+                }
             }
 
             m_pPatchNotes.Visible = m_pPatchNotes.Enabled = true;
@@ -260,20 +262,56 @@ namespace Workshopper.UI
             }
         }
 
-        private bool AddTag(string tag)
+        private void OnCategoryButtonClick(object sender, EventArgs e)
         {
-            bool bCanAdd = true;
-            for (int i = 0; i < pszTagList.Count(); i++)
+            m_pItemCategoryList.Visible = !m_pItemCategoryList.Visible;
+            if (m_pItemCategoryList.Visible)
+                m_pItemCategoryList.BringToFront();
+        }
+
+        private void OnCategoryListClick(object sender, EventArgs e)
+        {
+            string szItem = ((Label)sender).Text;
+            m_pItemCategoryButton.LabelTxt = szItem;
+
+            for (int i = 0; i < Controls.Count; i++)
             {
-                if (pszTagList[i] == tag)
-                {
-                    bCanAdd = false;
-                    break;
-                }
+                if (Controls[i] is ItemList)
+                    Controls[i].Visible = false;
             }
 
-            if (!bCanAdd)
-                return false;
+            SetupTagList(szItem);
+        }
+
+        private void ResetTagCheckboxes()
+        {
+            for (int i = 0; i < Utils.GetMaxTags(); i++)
+            {
+                m_pCheckBox[i].SetText("");
+                m_pCheckBox[i].ActiviateItem(false);
+                m_pCheckBox[i].Visible = false;
+            }
+        }
+
+        private void SetupTagList(string category)
+        {
+            ResetTagCheckboxes();
+
+            int iCategory = Utils.GetCategoryIndexForCatergoryName(category);
+            for (int i = 0; i < Utils.GetAvailableTags[iCategory].Count(); i++)
+            {
+                m_pCheckBox[i].Visible = true;
+                m_pCheckBox[i].SetText(Utils.GetAvailableTags[iCategory][i]);
+            }
+        }
+
+        private bool AddTag(string tag)
+        {
+            for (int i = 0; i < pszTagList.Count(); i++)
+            {
+                if (pszTagList[i].Equals(tag, StringComparison.CurrentCulture))
+                    return false;
+            }
 
             pszTagList.Add(tag);
             return true;
@@ -281,19 +319,16 @@ namespace Workshopper.UI
 
         private bool RemoveTag(string tag)
         {
-            bool bRemoved = false;
-
             for (int i = (pszTagList.Count() - 1); i >= 0; i--)
             {
-                if (pszTagList[i] == tag)
+                if (pszTagList[i].Equals(tag, StringComparison.CurrentCulture))
                 {
-                    bRemoved = true;
                     pszTagList.RemoveAt(i);
-                    break;
+                    return true;
                 }
             }
 
-            return bRemoved;
+            return false;
         }
 
         private void GetTagsFromString(string tags)
@@ -450,7 +485,6 @@ namespace Workshopper.UI
             format.LineAlignment = StringAlignment.Center;
             format.Alignment = StringAlignment.Near;
 
-            e.Graphics.DrawString("Tags", new Font("Arial", 14, FontStyle.Bold, GraphicsUnit.Pixel), Brushes.White, GetLayoutLoader().GetResItemBounds("TagsLabel"), format);
             e.Graphics.DrawRectangle(Pens.Black, GetLayoutLoader().GetResItemBounds("TagsFrame"));
 
             e.Graphics.DrawString("Contest:", Font, Brushes.White, GetLayoutLoader().GetResItemBounds("ContestLabel"));

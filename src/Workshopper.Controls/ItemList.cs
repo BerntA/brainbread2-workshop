@@ -58,13 +58,13 @@ true);
 
             Label textItem = new Label();
             textItem.Parent = this;
-            Font eFont = new System.Drawing.Font("Calibri", 7, FontStyle.Regular);
+            Font eFont = new System.Drawing.Font("Calibri", 9, FontStyle.Bold);
             textItem.Name = text;
             textItem.Text = text;
             textItem.Cursor = Cursors.Hand;
             textItem.BackColor = Color.Transparent;
             textItem.ForeColor = Color.White;
-            textItem.TextAlign = ContentAlignment.MiddleCenter;
+            textItem.TextAlign = ContentAlignment.MiddleLeft;
             textItem.Font = eFont;
             textItem.AutoSize = false;
 

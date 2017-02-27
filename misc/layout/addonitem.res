@@ -4,13 +4,13 @@
 	{
 		"xpos" "62"
 		"ypos" "1"
-		"wide" "535"
+		"wide" "685"
 		"tall" "30"	
 	}
 	
 	"DateLabel"
 	{
-		"xpos" "455"
+		"xpos" "605"
 		"ypos" "2"
 		"wide" "140"
 		"tall" "20"	
@@ -24,7 +24,7 @@
 	
 	"UpdateButton"
 	{
-		"xpos" "525"
+		"xpos" "675"
 		"ypos" "30"
 		"wide" "70"
 		"tall" "24"
