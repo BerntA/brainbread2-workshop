@@ -247,6 +247,7 @@ namespace Workshopper.UI
 
         private void OnCreateItem(object sender, UGCCreationEventArg e)
         {
+            MessageBox.Show(e.FileID.ToString());
             SubmitWorkshopItem(e.FileID, "Initial Release");
         }
 
@@ -279,6 +280,9 @@ namespace Workshopper.UI
                 if (Controls[i] is ItemList)
                     Controls[i].Visible = false;
             }
+
+            for (int i = 0; i < Utils.GetMaxTags(); i++)
+                RemoveTag(m_pCheckBox[i].GetText());
 
             SetupTagList(szItem);
         }
@@ -343,13 +347,16 @@ namespace Workshopper.UI
             }
         }
 
-        private bool IsStringValid(string inputStr)
+        private int GetTagCount()
         {
-            if (string.IsNullOrEmpty(inputStr) || string.IsNullOrWhiteSpace(inputStr))
-                return false;
+            int tagCount = 0;
+            for (int i = 0; i < pszTagList.Count(); i++)
+            {
+                if (!pszTagList[i].Equals("Whitelisted", StringComparison.CurrentCulture))
+                    tagCount++;
+            }
 
-            Regex r = new Regex(@"^[^~`^<>""'\\/]+$");
-            return r.IsMatch(inputStr);
+            return tagCount;
         }
 
         private void OnUploadAddon(object sender, EventArgs e)
@@ -362,7 +369,7 @@ namespace Workshopper.UI
                 return;
             }
 
-            if (pszTagList.Count() <= 0)
+            if (GetTagCount() <= 0)
             {
                 Utils.ShowWarningDialog("You have to select at least one tag!", null, true);
                 return;
@@ -380,16 +387,9 @@ namespace Workshopper.UI
                 return;
             }
 
-            if (!IsStringValid(m_pTitle.Text) ||
-                (m_bShouldUpdateItem && !IsStringValid(m_pPatchNotes.Text) && !string.IsNullOrEmpty(m_pPatchNotes.Text)))
-            {
-                Utils.ShowWarningDialog("Invalid characters detected!", null, true);
-                return;
-            }
-
             if (m_pDescription.Text.Length > 1000)
             {
-                Utils.ShowWarningDialog("The description is more than 1000 characters long!", null, true);
+                Utils.ShowWarningDialog("The description cannot be more than 1000 characters long!", null, true);
                 return;
             }
 
@@ -399,12 +399,6 @@ namespace Workshopper.UI
                 if (fileSize <= 0)
                 {
                     Utils.ShowWarningDialog("No files selected!", null, true);
-                    return;
-                }
-
-                if (fileSize > 104857600)
-                {
-                    Utils.ShowWarningDialog("Content size is too big, 100MB is max!", null, true);
                     return;
                 }
             }
@@ -466,6 +460,7 @@ namespace Workshopper.UI
                 m_pImgPreview = Properties.Resources.unknown;
             }
 
+            UGCHandler.OnCreateWorkshopItem -= OnCreateItem;
             base.OnFormExit();
         }
 

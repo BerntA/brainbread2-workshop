@@ -1,6 +1,6 @@
 ﻿namespace Workshopper.Controls
 {
-    partial class AddonItem
+    partial class CustomProgressBar
     {
         /// <summary> 
         /// Required designer variable.
@@ -30,23 +30,22 @@
         {
             this.SuspendLayout();
             // 
-            // AddonItem
+            // CustomProgressBar
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(25)))), ((int)(((byte)(25)))), ((int)(((byte)(25)))));
+            this.BackColor = System.Drawing.Color.Transparent;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.Cursor = System.Windows.Forms.Cursors.Hand;
             this.DoubleBuffered = true;
-            this.Font = new System.Drawing.Font("Times New Roman", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Font = new System.Drawing.Font("Georgia", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ForeColor = System.Drawing.Color.White;
-            this.Name = "AddonItem";
-            this.Size = new System.Drawing.Size(250, 40);
+            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Name = "CustomProgressBar";
+            this.Size = new System.Drawing.Size(486, 27);
             this.ResumeLayout(false);
 
         }
 
         #endregion
-
     }
 }

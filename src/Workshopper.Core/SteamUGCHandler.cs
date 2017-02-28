@@ -145,7 +145,7 @@ namespace Workshopper.Core
             if (bUpdate)
                 SteamHandler.GetMainForm()._addonList.UpdateItem(fileID, title, description, tags, visibility, Utils.GetCurrentDate());
             else
-                SteamHandler.GetMainForm()._addonList.AddItem(title, description, tags, visibility, fileID, Utils.GetCurrentDate());
+                SteamHandler.GetMainForm()._addonList.AddItem(title, description, tags, visibility, fileID, Utils.GetCurrentDate(), true);
 
             SteamHandler.GetMainForm()._addonList.StartUploading(fileID, handle);
         }
@@ -204,6 +204,7 @@ namespace Workshopper.Core
                 }
             }
 
+            SteamHandler.GetMainForm()._addonList.RefreshLayout();
             SteamUGC.ReleaseQueryUGCRequest(_ugcHandle);
 
             StartDownloadingPreviewImages();

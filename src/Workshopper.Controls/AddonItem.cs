@@ -23,7 +23,6 @@ namespace Workshopper.Controls
     {
         public PublishedFileId_t GetItemFileID() { return ulFileID; }
 
-        private static Image m_pProgressBar = Globals.GetTexture("bar");
         private DynamicLayoutLoader _layout;
         private Color colOverlay;
         private bool m_bWhitelisted;
@@ -35,6 +34,7 @@ namespace Workshopper.Controls
         private string pszDate;
         private ImageButton btnUpdate;
         private Image m_pImagePreview;
+        private CustomProgressBar progressBar;
 
         // Upload Definitions:
         private bool m_bUploading;
@@ -44,6 +44,12 @@ namespace Workshopper.Controls
         {
             m_pImagePreview = Globals.GetTexture(fileID.ToString(), "jpg");
             InitializeComponent();
+            progressBar = new CustomProgressBar(fileID);
+            progressBar.Parent = this;
+            progressBar.Name = "ProgressBar";
+            progressBar.Visible = false;
+            progressBar.MouseEnter += new EventHandler(OnMouseEnterProgressBar);
+            progressBar.MouseLeave += new EventHandler(OnMouseLeaveProgressBar);
             _layout = DynamicLayoutLoader.LoadLayoutForControl("addonitem", this, true);
             pszName = title;
             pszDescription = description;
@@ -54,7 +60,6 @@ namespace Workshopper.Controls
             colOverlay = _layout.GetResItemBgColor("Overlay");
             m_bUploading = false;
             btnUpdate = null;
-            timFrame.Enabled = false;
             m_bWhitelisted = pszTags.Contains("Whitelisted");
         }
 
@@ -73,21 +78,23 @@ namespace Workshopper.Controls
         public void StartUploading(UGCUpdateHandle_t updHandle)
         {
             updateHandle = updHandle;
-            m_bUploading = timFrame.Enabled = true;
+            m_bUploading = true;
 
             if (btnUpdate != null)
                 btnUpdate.Visible = btnUpdate.Enabled = false;
 
+            progressBar.ShowProgress(updateHandle);
             Invalidate();
         }
 
         public void StopUploading()
         {
-            m_bUploading = timFrame.Enabled = false;
+            m_bUploading = false;
 
             if (btnUpdate != null)
                 btnUpdate.Visible = btnUpdate.Enabled = true;
 
+            progressBar.HideProgress();
             Invalidate();
         }
 
@@ -104,6 +111,21 @@ namespace Workshopper.Controls
                 btnUpdate.Visible = false;
         }
 
+        public void UpdateItemLayout()
+        {
+            m_pImagePreview = Globals.GetTexture(ulFileID.ToString(), "jpg");
+            Invalidate();
+        }
+
+        public void Cleanup()
+        {
+            if (m_pImagePreview != null && m_pImagePreview != Properties.Resources.unknown)
+            {
+                m_pImagePreview.Dispose();
+                m_pImagePreview = Properties.Resources.unknown;
+            }
+        }
+
         private void OnClickUpdate(object sender, EventArgs e)
         {
             if (m_bUploading)
@@ -111,6 +133,7 @@ namespace Workshopper.Controls
 
             CreationPanel panel = new CreationPanel(pszName, pszDescription, pszTags, m_iVisibility, ulFileID);
             panel.ShowDialog(this);
+            panel = null;
         }
 
         private void OnEnterUpdateButton(object sender, EventArgs e)
@@ -119,6 +142,16 @@ namespace Workshopper.Controls
         }
 
         private void OnLeaveUpdateButton(object sender, EventArgs e)
+        {
+            DoRollover();
+        }
+
+        private void OnMouseEnterProgressBar(object sender, EventArgs e)
+        {
+            DoRollover(true);
+        }
+
+        private void OnMouseLeaveProgressBar(object sender, EventArgs e)
         {
             DoRollover();
         }
@@ -155,53 +188,20 @@ namespace Workshopper.Controls
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            base.OnPaint(e);
-
             e.Graphics.DrawImage(m_pImagePreview, _layout.GetResItemBounds("ImagePreview"));
             e.Graphics.FillRectangle(new SolidBrush(colOverlay), new Rectangle(0, 0, Width, Height));
-            e.Graphics.DrawRectangle(Pens.Black, new Rectangle(1, 1, Height - 2, Height - 2));
+            e.Graphics.DrawRectangle(Pens.Black, _layout.GetResItemBounds("ImagePreview"));
+
+            base.OnPaint(e);
+
+            if (progressBar.Visible)
+                return;
 
             StringFormat formatter = new StringFormat();
             formatter.LineAlignment = StringAlignment.Center;
             formatter.Alignment = StringAlignment.Near;
 
-            if (m_bUploading)
-            {
-                bool bDrawProgress = false;
-                string statusString = "";
-                ulong punBytesProcessed = 0, punBytesTotal = 0;
-                EItemUpdateStatus uploadStatus = SteamUGC.GetItemUpdateProgress(updateHandle, out punBytesProcessed, out punBytesTotal);
-
-                if (uploadStatus == EItemUpdateStatus.k_EItemUpdateStatusPreparingConfig)
-                    statusString = "Preparing Content...";
-                else if (uploadStatus == EItemUpdateStatus.k_EItemUpdateStatusPreparingContent)
-                {
-                    statusString = string.Format("Uploading Content: {0} / {1} bytes", punBytesProcessed, punBytesTotal);
-                    bDrawProgress = true;
-                }
-                else if (uploadStatus == EItemUpdateStatus.k_EItemUpdateStatusUploadingContent || uploadStatus == EItemUpdateStatus.k_EItemUpdateStatusUploadingPreviewFile)
-                {
-                    statusString = "Configuring Content...";
-                }
-                else if (uploadStatus == EItemUpdateStatus.k_EItemUpdateStatusCommittingChanges)
-                    statusString = "Committing Changes...";
-
-                e.Graphics.DrawString(statusString, new Font("Times New Roman", 11, FontStyle.Bold), new SolidBrush(Color.White), _layout.GetResItemBounds("ProgressLabel"), formatter);
-                if (bDrawProgress && (punBytesTotal > 0))
-                {
-                    Rectangle progressBounds = _layout.GetResItemBounds("ProgressBar");
-                    e.Graphics.DrawImage(m_pProgressBar, progressBounds);
-
-                    double flPercent = ((double)punBytesProcessed) / ((double)punBytesTotal);
-                    double flWide = ((double)(progressBounds.Width)) * flPercent;
-                    e.Graphics.FillRectangle(new SolidBrush(_layout.GetResItemFgColor("ProgressBar")), new Rectangle(progressBounds.X, progressBounds.Y, (int)flWide, progressBounds.Height));
-                    e.Graphics.DrawRectangle(Pens.Black, progressBounds);
-                }
-
-                return;
-            }
-
-            e.Graphics.DrawString(pszName, new Font("Times New Roman", 20, FontStyle.Bold), new SolidBrush(Color.White), _layout.GetResItemBounds("TitleLabel"), formatter);
+            e.Graphics.DrawString(pszName, new Font("Georgia", 14, FontStyle.Bold), new SolidBrush(Color.White), _layout.GetResItemBounds("TitleLabel"), formatter);
             if (m_bWhitelisted)
             {
                 e.Graphics.DrawImage(Properties.Resources.verified, _layout.GetResItemBounds("WhitelistedIcon"));
@@ -212,11 +212,6 @@ namespace Workshopper.Controls
             formatter.Alignment = StringAlignment.Far;
 
             e.Graphics.DrawString(pszDate, new Font("Times New Roman", 10, FontStyle.Bold), new SolidBrush(Color.White), _layout.GetResItemBounds("DateLabel"), formatter);
-        }
-
-        private void timFrame_Tick(object sender, EventArgs e)
-        {
-            Invalidate();
         }
     }
 }

@@ -24,29 +24,19 @@ namespace Workshopper.Controls
         {
             InitializeComponent();
 
-            this.AutoScroll = false;
+            this.AutoScroll = true;
             this.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
         }
 
-        public void AddItem(string title, string description, string tags, int visibility, PublishedFileId_t fileID, string lastChangeDate)
+        public void AddItem(string title, string description, string tags, int visibility, PublishedFileId_t fileID, string lastChangeDate, bool bRefreshLayout = false)
         {
             AddonItem item = new AddonItem(title, description, tags, visibility, fileID, lastChangeDate);
             item.Parent = this;
-
-            int sizeY = (Controls.Count * 60) - Width;
-            if (sizeY > 0)
-            {
-                item.Bounds = new Rectangle(0, (60 * GetItemNumber()), Width - SystemInformation.VerticalScrollBarWidth, 60);
-                this.AutoScroll = true;
-                this.SetAutoScrollMargin(0, sizeY);
-            }
-            else
-            {
-                item.Bounds = new Rectangle(0, (60 * GetItemNumber()), Width, 60);
-                this.AutoScroll = false;
-            }
-
+            item.Bounds = new Rectangle(0, (60 * GetItemNumber()), (Width - SystemInformation.VerticalScrollBarWidth - 2), 60);
             item.SetupItem();
+
+            if (bRefreshLayout)
+                RefreshLayout();
         }
 
         public AddonItem GetAddonItemForFileID(PublishedFileId_t fileID)
@@ -92,7 +82,10 @@ namespace Workshopper.Controls
             foreach (Control control in Controls)
             {
                 if (control is AddonItem)
-                    control.Invalidate();
+                {
+                    AddonItem item = ((AddonItem)control);
+                    item.UpdateItemLayout();
+                }
             }
         }
 
@@ -101,8 +94,17 @@ namespace Workshopper.Controls
             for (int i = (Controls.Count - 1); i >= 0; i--)
             {
                 if (Controls[i] is AddonItem)
+                {
+                    AddonItem item = ((AddonItem)Controls[i]);
+                    item.Cleanup();
                     Controls.Remove(Controls[i]);
+                }
             }
+        }
+
+        public void RefreshLayout()
+        {
+            Invalidate();
         }
 
         private int GetItemNumber()

@@ -66,6 +66,7 @@ namespace Workshopper.UI
         {
             CreationPanel panel = new CreationPanel();
             panel.ShowDialog(this);
+            panel = null;
         }
 
         protected override void OnPaint(PaintEventArgs e)

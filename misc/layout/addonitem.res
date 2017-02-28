@@ -2,15 +2,15 @@
 {
 	"TitleLabel"
 	{
-		"xpos" "62"
+		"xpos" "120"
 		"ypos" "1"
-		"wide" "685"
+		"wide" "668"
 		"tall" "30"	
 	}
 	
 	"DateLabel"
 	{
-		"xpos" "605"
+		"xpos" "588"
 		"ypos" "2"
 		"wide" "140"
 		"tall" "20"	
@@ -24,7 +24,7 @@
 	
 	"UpdateButton"
 	{
-		"xpos" "675"
+		"xpos" "658"
 		"ypos" "30"
 		"wide" "70"
 		"tall" "24"
@@ -34,13 +34,13 @@
 	{
 		"xpos" "1"
 		"ypos" "1"
-		"wide" "58"
+		"wide" "116"
 		"tall" "58"	
 	}
 	
 	"WhitelistedIcon"
 	{
-		"xpos" "63"
+		"xpos" "121"
 		"ypos" "34"
 		"wide" "18"
 		"tall" "18"	
@@ -48,7 +48,7 @@
 	
 	"WhitelistLabel"
 	{
-		"xpos" "81"
+		"xpos" "139"
 		"ypos" "33"
 		"wide" "535"
 		"tall" "20"	
@@ -56,18 +56,9 @@
 
 	"ProgressBar"
 	{
-		"xpos" "62"
-		"ypos" "33"
-		"wide" "513"
-		"tall" "16"
-		"FgColor" "200 15 15 145"
-	}
-	
-	"ProgressLabel"
-	{
-		"xpos" "62"
+		"xpos" "120"
 		"ypos" "1"
 		"wide" "535"
-		"tall" "30"
+		"tall" "46"
 	}
 }

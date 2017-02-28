@@ -89,6 +89,12 @@
     <Compile Include="Workshopper.Controls\CheckBoxItem.Designer.cs">
       <DependentUpon>CheckBoxItem.cs</DependentUpon>
     </Compile>
+    <Compile Include="Workshopper.Controls\CustomProgressBar.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Workshopper.Controls\CustomProgressBar.Designer.cs">
+      <DependentUpon>CustomProgressBar.cs</DependentUpon>
+    </Compile>
     <Compile Include="Workshopper.Controls\ImageButton.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -157,6 +163,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Workshopper.Controls\CheckBoxItem.resx">
       <DependentUpon>CheckBoxItem.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Workshopper.Controls\CustomProgressBar.resx">
+      <DependentUpon>CustomProgressBar.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Workshopper.Controls\ImageButton.resx">
       <DependentUpon>ImageButton.cs</DependentUpon>
