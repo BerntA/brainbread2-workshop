@@ -1,4 +1,10 @@
-﻿using System;
+﻿//=========       Copyright © Reperio Studios 2013-2017 @ Bernt Andreas Eide!       ============//
+//
+// Purpose: Custom Progress Bar.
+//
+//=============================================================================================//
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -10,6 +16,7 @@ using System.Windows.Forms;
 using Workshopper.Core;
 using Steamworks;
 using Workshopper.UI;
+using Workshopper.Filesystem;
 
 namespace Workshopper.Controls
 {
@@ -56,23 +63,22 @@ namespace Workshopper.Controls
         private void OnTick(object sender, EventArgs e)
         {
             EItemUpdateStatus uploadStatus = SteamUGC.GetItemUpdateProgress(_progressHandle, out _bytesProcessed, out _bytesTotal);
-            Console.WriteLine(uploadStatus.ToString());
 
-            _progressText = "Loading...";
+            _progressText = Localization.GetTextForToken("ADDON_UPLOAD_STATE1");
             switch (uploadStatus)
             {
                 case EItemUpdateStatus.k_EItemUpdateStatusPreparingConfig:
-                    _progressText = "Preparing Content...";
+                    _progressText = Localization.GetTextForToken("ADDON_UPLOAD_STATE2");
                     break;
                 case EItemUpdateStatus.k_EItemUpdateStatusPreparingContent:
-                    _progressText = string.Format("Uploading Content: {0} / {1} bytes", _bytesProcessed, _bytesTotal);
+                    _progressText = Localization.GetTextForToken("ADDON_UPLOAD_STATE3", _bytesProcessed.ToString(), _bytesTotal.ToString());
                     break;
                 case EItemUpdateStatus.k_EItemUpdateStatusUploadingContent:
                 case EItemUpdateStatus.k_EItemUpdateStatusUploadingPreviewFile:
-                    _progressText = "Configuring Content...";
+                    _progressText = Localization.GetTextForToken("ADDON_UPLOAD_STATE4");
                     break;
                 case EItemUpdateStatus.k_EItemUpdateStatusCommittingChanges:
-                    _progressText = "Committing Changes...";
+                    _progressText = Localization.GetTextForToken("ADDON_UPLOAD_STATE5");
                     break;
             }
 

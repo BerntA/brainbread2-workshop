@@ -12,21 +12,20 @@ using Steamworks;
 using System.Net;
 using System.IO;
 using System.Threading;
+using Workshopper.UI;
+using Workshopper.Filesystem;
 
 namespace Workshopper.Core
 {
     public static class UGCHandler
     {
-        // EVENTS
-        public delegate void ItemCreatedHandler(object sender, UGCCreationEventArg e);
-        public static event ItemCreatedHandler OnCreateWorkshopItem;
-
         public struct ImagePreviewItem_t
         {
             public string url;
             public string fileDestination;
         }
 
+        public static CreationPanel creationHandle { get; set; }
         public static List<ImagePreviewItem_t> GetImagePreviewQueue() { return pszImagePreviewURLs; }
 
         private static List<ImagePreviewItem_t> pszImagePreviewURLs;
@@ -35,19 +34,14 @@ namespace Workshopper.Core
         private static CallResult<SteamUGCQueryCompleted_t> m_QueryUGCCompleted;
         private static CallResult<CreateItemResult_t> m_CreateItemResult;
         private static CallResult<SubmitItemUpdateResult_t> m_SubmitItemUpdate;
-        private static bool m_bInit = false;
 
         public static void Initialize()
         {
-            if (m_bInit)
-                return;
-
-            m_bInit = true;
-
             m_QueryUGCCompleted = CallResult<SteamUGCQueryCompleted_t>.Create(OnUGCQueryComplete);
             m_CreateItemResult = CallResult<CreateItemResult_t>.Create(OnCreateItem);
             m_SubmitItemUpdate = CallResult<SubmitItemUpdateResult_t>.Create(OnSubmitItem);
             pszImagePreviewURLs = new List<ImagePreviewItem_t>();
+            creationHandle = null;
 
             RetrievePublishedItems();
         }
@@ -57,8 +51,14 @@ namespace Workshopper.Core
             if (!SteamHandler.HasInitializedSteam())
                 return;
 
-            _ugcHandle = SteamUGC.CreateQueryUserUGCRequest(SteamUser.GetSteamID().GetAccountID(), EUserUGCList.k_EUserUGCList_Published, EUGCMatchingUGCType.k_EUGCMatchingUGCType_Items, EUserUGCListSortOrder.k_EUserUGCListSortOrder_CreationOrderAsc, SteamUtils.GetAppID(), (AppId_t)346330, 1);
+            _ugcHandle = SteamUGC.CreateQueryUserUGCRequest(
+                SteamUser.GetSteamID().GetAccountID(),
+                EUserUGCList.k_EUserUGCList_Published,
+                EUGCMatchingUGCType.k_EUGCMatchingUGCType_Items,
+                EUserUGCListSortOrder.k_EUserUGCListSortOrder_CreationOrderAsc,
+                SteamUtils.GetAppID(), (AppId_t)346330, 1);
             SteamUGC.SetReturnKeyValueTags(_ugcHandle, true);
+
             SteamAPICall_t registerCallback = SteamUGC.SendQueryUGCRequest(_ugcHandle);
             m_QueryUGCCompleted.Set(registerCallback);
         }
@@ -111,6 +111,8 @@ namespace Workshopper.Core
             SteamUGC.SetItemVisibility(_ugcUpdateHandle, (ERemoteStoragePublishedFileVisibility)visibility);
             SteamUGC.SetItemTags(_ugcUpdateHandle, tagList);
 
+            string imagePath = string.IsNullOrEmpty(previewFilePath) ? null : Path.GetDirectoryName(previewFilePath);
+            Utils.CreateItemDataFile(itemID, imagePath, contentPath);
             AddNewItemToList(bIsUpdate, title, description, visibility, tagList, itemID, _ugcUpdateHandle);
 
             SteamAPICall_t registerCallback = SteamUGC.SubmitItemUpdate(_ugcUpdateHandle, changeLog);
@@ -137,32 +139,29 @@ namespace Workshopper.Core
             if (tagList != null)
             {
                 for (int i = 0; i < tagList.Count(); i++)
-                {
                     tags += string.Format("{0},", tagList[i]);
-                }
             }
 
             if (bUpdate)
-                SteamHandler.GetMainForm()._addonList.UpdateItem(fileID, title, description, tags, visibility, Utils.GetCurrentDate());
+                SteamHandler.GetAddonList().UpdateItem(fileID, title, description, tags, visibility, Utils.GetCurrentDate());
             else
-                SteamHandler.GetMainForm()._addonList.AddItem(title, description, tags, visibility, fileID, Utils.GetCurrentDate(), true);
+                SteamHandler.GetAddonList().AddItem(title, description, tags, visibility, fileID, Utils.GetCurrentDate(), true);
 
-            SteamHandler.GetMainForm()._addonList.StartUploading(fileID, handle);
+            SteamHandler.GetAddonList().StartUploading(fileID, handle);
         }
 
         private static void OnCreateItem(CreateItemResult_t param, bool bIOFailure)
         {
             if (param.m_bUserNeedsToAcceptWorkshopLegalAgreement || bIOFailure || (param.m_eResult != EResult.k_EResultOK))
             {
-                Utils.ShowWarningDialog("Unable to create item!", null, true);
+                Utils.ShowWarningDialog(Localization.GetTextForToken("CREATION_FAILED1"), null, true);
                 return;
             }
 
-            if (OnCreateWorkshopItem == null)
+            if (creationHandle == null)
                 return;
 
-            UGCCreationEventArg args = new UGCCreationEventArg(param.m_nPublishedFileId);
-            OnCreateWorkshopItem(null, args);
+            creationHandle.SubmitWorkshopItem(param.m_nPublishedFileId, "Initial Release");
         }
 
         private static void OnSubmitItem(SubmitItemUpdateResult_t param, bool bIOFailure)
@@ -170,22 +169,22 @@ namespace Workshopper.Core
             if (param.m_bUserNeedsToAcceptWorkshopLegalAgreement || bIOFailure || (param.m_eResult != EResult.k_EResultOK))
             {
                 RetrievePublishedItems();
-                Utils.ShowWarningDialog("Unable to submit item!", null, true);
+                Utils.ShowWarningDialog(Localization.GetTextForToken("CREATION_FAILED2"), null, true);
                 return;
             }
 
-            SteamHandler.GetMainForm()._addonList.StopUploading();
-            Utils.ShowWarningDialog("Submitted item successfully!", null, true);
+            SteamHandler.GetAddonList().StopUploading();
+            Utils.ShowWarningDialog(Localization.GetTextForToken("CREATION_SUCCESS1"), null, true);
         }
 
         private static void OnUGCQueryComplete(SteamUGCQueryCompleted_t param, bool bIOFailure)
         {
-            SteamHandler.GetMainForm()._addonList.RemoveItems();
+            SteamHandler.GetAddonList().RemoveItems();
             pszImagePreviewURLs.Clear();
 
             if (bIOFailure || (param.m_eResult != EResult.k_EResultOK))
             {
-                Utils.ShowWarningDialog("Unable to fetch workshop items!", null, true);
+                Utils.ShowWarningDialog(Localization.GetTextForToken("ADDONLIST_FETCH_FAIL1"), null, true);
                 SteamUGC.ReleaseQueryUGCRequest(_ugcHandle);
                 return;
             }
@@ -200,11 +199,11 @@ namespace Workshopper.Core
                         AddImagePreviewItemToQueue(url, pDetails.m_nPublishedFileId.m_PublishedFileId.ToString());
 
                     string tags = pDetails.m_rgchTags + ",";
-                    SteamHandler.GetMainForm()._addonList.AddItem(pDetails.m_rgchTitle, pDetails.m_rgchDescription, tags, (int)pDetails.m_eVisibility, pDetails.m_nPublishedFileId, Utils.GetDateFromTimeCreated((ulong)pDetails.m_rtimeUpdated));
+                    SteamHandler.GetAddonList().AddItem(pDetails.m_rgchTitle, pDetails.m_rgchDescription, tags, (int)pDetails.m_eVisibility, pDetails.m_nPublishedFileId, Utils.GetDateFromTimeCreated((ulong)pDetails.m_rtimeUpdated));
                 }
             }
 
-            SteamHandler.GetMainForm()._addonList.RefreshLayout();
+            SteamHandler.GetAddonList().RefreshLayout();
             SteamUGC.ReleaseQueryUGCRequest(_ugcHandle);
 
             StartDownloadingPreviewImages();
@@ -268,7 +267,7 @@ namespace Workshopper.Core
             UGCHandler.GetImagePreviewQueue().Clear();
 
             if (SteamHandler.GetMainForm() != null)
-                SteamHandler.GetMainForm()._addonList.RefreshItems();
+                SteamHandler.GetAddonList().RefreshItems();
         }
     }
 }

@@ -69,6 +69,19 @@ namespace Workshopper.UI
             base.OnMouseDown(e);
         }
 
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            if (Opacity > 0)
+            {
+                e.Cancel = true;
+                timFadeOut.Enabled = true;
+                return;
+            }
+
+            OnFormExit();
+            base.OnFormClosing(e);
+        }
+
         private void OnClickExit(object sender, EventArgs e)
         {
             timFadeOut.Enabled = true;
@@ -81,7 +94,7 @@ namespace Workshopper.UI
             {
                 Opacity = 0;
                 timFadeOut.Enabled = false;
-                OnFormExit();
+                Close();
             }
         }
 
@@ -94,12 +107,6 @@ namespace Workshopper.UI
                 timFadeIn.Enabled = false;
                 OnFormActive();
             }
-        }
-
-        private void BaseForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            e.Cancel = true;
-            timFadeOut.Enabled = true;
         }
     }
 }

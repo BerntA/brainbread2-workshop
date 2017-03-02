@@ -41,23 +41,26 @@ namespace Workshopper.UI
         private bool m_bShouldUpdateItem;
         private bool m_bHasChangedImagePath;
         private Image m_pImgPreview;
+        private AddonItem addonLink;
 
         public CreationPanel()
         {
             InitializeComponent();
             Opacity = 0;
+            Text = Localization.GetTextForToken("CREATION_CREATE");
 
             pszTagList = new List<string>();
             pszImagePath = null;
             pszContentPath = null;
             m_bShouldUpdateItem = false;
             m_bHasChangedImagePath = false;
+            addonLink = null;
 
             _fileDialog = new OpenFileDialog();
             _fileDialog.DefaultExt = ".jpg";
             _fileDialog.CheckFileExists = true;
             _fileDialog.CheckPathExists = true;
-            _fileDialog.Title = "Select an image";
+            _fileDialog.Title = Localization.GetTextForToken("FILE_SELECTION_IMAGE");
             _fileDialog.AddExtension = true;
             _fileDialog.Multiselect = false;
             _fileDialog.Filter = "JPG files|*.jpg";
@@ -67,12 +70,12 @@ namespace Workshopper.UI
             _folderDialog = new FolderBrowserDialog();
             _folderDialog.SelectedPath = Utils.GetGameDirectory((AppId_t)346330);
 
-            TextButton btnImg = new TextButton("Select Image:", Color.White, Color.Red);
+            TextButton btnImg = new TextButton(Localization.GetTextForToken("CREATION_SELECT_IMAGE"), Color.White, Color.Red);
             btnImg.Parent = this;
             btnImg.Click += new EventHandler(OnOpenImageSelection);
             btnImg.Name = "ImagePathButton";
 
-            TextButton btnFile = new TextButton("Select File Dir:", Color.White, Color.Red);
+            TextButton btnFile = new TextButton(Localization.GetTextForToken("CREATION_SELECT_FILEDIR"), Color.White, Color.Red);
             btnFile.Parent = this;
             btnFile.Click += new EventHandler(OnOpenFolderDialog);
             btnFile.Name = "FilePathButton";
@@ -158,9 +161,9 @@ namespace Workshopper.UI
                 m_pVisibilityChoices[i].Name = string.Format("VisibilityButton{0}", (i + 1));
             }
 
-            m_pVisibilityChoices[0].Text = "Public";
-            m_pVisibilityChoices[1].Text = "Private";
-            m_pVisibilityChoices[2].Text = "Hidden";
+            m_pVisibilityChoices[0].Text = Localization.GetTextForToken("CREATION_VIS_PUBLIC");
+            m_pVisibilityChoices[1].Text = Localization.GetTextForToken("CREATION_VIS_PRIVATE");
+            m_pVisibilityChoices[2].Text = Localization.GetTextForToken("CREATION_VIS_HIDDEN");
             m_pVisibilityChoices[0].Select();
 
             m_pItemCategoryButton = new ListButton();
@@ -179,15 +182,16 @@ namespace Workshopper.UI
 
             LoadLayout("creationmenu");
 
-            UGCHandler.OnCreateWorkshopItem += new UGCHandler.ItemCreatedHandler(OnCreateItem);
+            UGCHandler.creationHandle = this;
         }
 
-        public CreationPanel(string title, string description, string tags, int visibility, PublishedFileId_t fileID)
+        public CreationPanel(AddonItem link, string title, string description, string tags, int visibility, PublishedFileId_t fileID)
             : this()
         {
+            addonLink = link;
             m_bShouldUpdateItem = true;
             m_bHasChangedImagePath = false;
-            Text = "Update Addon";
+            Text = Localization.GetTextForToken("CREATION_UPDATE");
 
             // Set the stuff:
             pszContentPath = null;
@@ -219,16 +223,37 @@ namespace Workshopper.UI
 
             m_pPatchNotes.Visible = m_pPatchNotes.Enabled = true;
 
+            KeyValues pkvItemData = new KeyValues();
+            if (pkvItemData.LoadFromFile(SteamCloudHandler.GetAddonItemPath(fileID.ToString())))
+            {
+                string defaultContentPath = pkvItemData.GetString("filePath");
+                string defaultImagePath = pkvItemData.GetString("imagePath");
+
+                if (!string.IsNullOrEmpty(defaultContentPath))
+                    _folderDialog.SelectedPath = defaultContentPath;
+
+                if (!string.IsNullOrEmpty(defaultImagePath))
+                    _fileDialog.InitialDirectory = defaultImagePath;
+            }
+            pkvItemData.Dispose();
+            pkvItemData = null;
+
             Invalidate();
         }
 
-        private void SubmitWorkshopItem(PublishedFileId_t fileID, string changelog)
+        public void SubmitWorkshopItem(PublishedFileId_t fileID, string changelog)
         {
             int iVisibility = 0;
             if (m_pVisibilityChoices[1].Checked)
                 iVisibility = 1;
             else if (m_pVisibilityChoices[2].Checked)
                 iVisibility = 2;
+
+            if (m_bShouldUpdateItem && (addonLink != null))
+            {
+                addonLink.Cleanup();
+                addonLink.Invalidate();
+            }
 
             try
             {
@@ -240,15 +265,12 @@ namespace Workshopper.UI
             }
             finally
             {
+                if (m_bShouldUpdateItem && (addonLink != null))
+                    addonLink.UpdateItemLayout();
+
                 UGCHandler.SubmitItem(fileID, m_pTitle.Text, m_pDescription.Text, iVisibility, pszContentPath, pszImagePath, pszTagList, changelog, m_bShouldUpdateItem);
                 Close();
             }
-        }
-
-        private void OnCreateItem(object sender, UGCCreationEventArg e)
-        {
-            MessageBox.Show(e.FileID.ToString());
-            SubmitWorkshopItem(e.FileID, "Initial Release");
         }
 
         private void OnTagClicked(object sender, EventArgs e)
@@ -365,31 +387,32 @@ namespace Workshopper.UI
 
             if (string.IsNullOrEmpty(m_pTitle.Text) || string.IsNullOrEmpty(m_pDescription.Text))
             {
-                Utils.ShowWarningDialog("Please fill out the fields first!", null, true);
+                Utils.ShowWarningDialog(Localization.GetTextForToken("CREATION_FAILED3"), null, true);
                 return;
             }
 
             if (GetTagCount() <= 0)
             {
-                Utils.ShowWarningDialog("You have to select at least one tag!", null, true);
+                Utils.ShowWarningDialog(Localization.GetTextForToken("CREATION_FAILED4"), null, true);
                 return;
             }
 
             if (string.IsNullOrEmpty(imagePreview) && !m_bShouldUpdateItem)
             {
-                Utils.ShowWarningDialog("You have to select an image!", null, true);
+                Utils.ShowWarningDialog(Localization.GetTextForToken("CREATION_FAILED5"), null, true);
                 return;
             }
 
             if (string.IsNullOrEmpty(pszContentPath) && !m_bShouldUpdateItem)
             {
-                Utils.ShowWarningDialog("You have to select the content directory!", null, true);
+                Utils.ShowWarningDialog(Localization.GetTextForToken("CREATION_FAILED6"), null, true);
                 return;
             }
 
-            if (m_pDescription.Text.Length > 1000)
+            int maxDescriptionLen = 1000;
+            if (m_pDescription.Text.Length > maxDescriptionLen)
             {
-                Utils.ShowWarningDialog("The description cannot be more than 1000 characters long!", null, true);
+                Utils.ShowWarningDialog(Localization.GetTextForToken("CREATION_FAILED7", maxDescriptionLen.ToString()), null, true);
                 return;
             }
 
@@ -398,7 +421,7 @@ namespace Workshopper.UI
                 ulong fileSize = Utils.GetSizeOfContent(pszContentPath);
                 if (fileSize <= 0)
                 {
-                    Utils.ShowWarningDialog("No files selected!", null, true);
+                    Utils.ShowWarningDialog(Localization.GetTextForToken("CREATION_FAILED8"), null, true);
                     return;
                 }
             }
@@ -408,13 +431,13 @@ namespace Workshopper.UI
                 ulong fileSize = Utils.GetSizeOfFile(pszImagePath);
                 if (fileSize <= 0)
                 {
-                    Utils.ShowWarningDialog("No image selected!", null, true);
+                    Utils.ShowWarningDialog(Localization.GetTextForToken("CREATION_FAILED9"), null, true);
                     return;
                 }
 
                 if (fileSize > 1048576)
                 {
-                    Utils.ShowWarningDialog("Image size is too big, 1MB is max!", null, true);
+                    Utils.ShowWarningDialog(Localization.GetTextForToken("CREATION_FAILED10"), null, true);
                     return;
                 }
             }
@@ -447,20 +470,27 @@ namespace Workshopper.UI
 
         private void SetImagePreview(string path)
         {
+            if (!string.IsNullOrEmpty(pszImagePath))
+                Cleanup();
+
             pszImagePath = path;
             if (pszImagePath != null && File.Exists(pszImagePath))
                 m_pImgPreview = Image.FromFile(pszImagePath);
         }
 
-        protected override void OnFormExit()
+        private void Cleanup()
         {
             if ((m_pImgPreview != null) && (m_pImgPreview != Properties.Resources.unknown))
             {
                 m_pImgPreview.Dispose();
                 m_pImgPreview = Properties.Resources.unknown;
             }
+        }
 
-            UGCHandler.OnCreateWorkshopItem -= OnCreateItem;
+        protected override void OnFormExit()
+        {
+            Cleanup();
+            UGCHandler.creationHandle = null;
             base.OnFormExit();
         }
 
@@ -482,13 +512,13 @@ namespace Workshopper.UI
 
             e.Graphics.DrawRectangle(Pens.Black, GetLayoutLoader().GetResItemBounds("TagsFrame"));
 
-            e.Graphics.DrawString("Contest:", Font, Brushes.White, GetLayoutLoader().GetResItemBounds("ContestLabel"));
+            e.Graphics.DrawString(Localization.GetTextForToken("CREATION_CONTEST_TAGS"), Font, Brushes.White, GetLayoutLoader().GetResItemBounds("ContestLabel"));
             e.Graphics.DrawString(Text, Font, Brushes.White, GetLayoutLoader().GetResItemBounds("HeaderText"));
-            e.Graphics.DrawString("Title:", Font, Brushes.White, GetLayoutLoader().GetResItemBounds("TitleLabel"));
-            e.Graphics.DrawString("Description:", Font, Brushes.White, GetLayoutLoader().GetResItemBounds("DescriptionLabel"));
+            e.Graphics.DrawString(Localization.GetTextForToken("CREATION_TITLE"), Font, Brushes.White, GetLayoutLoader().GetResItemBounds("TitleLabel"));
+            e.Graphics.DrawString(Localization.GetTextForToken("CREATION_DESCRIPTION"), Font, Brushes.White, GetLayoutLoader().GetResItemBounds("DescriptionLabel"));
 
             if (m_bShouldUpdateItem)
-                e.Graphics.DrawString("Changelog:", Font, Brushes.White, GetLayoutLoader().GetResItemBounds("PatchLogNoteLabel"));
+                e.Graphics.DrawString(Localization.GetTextForToken("CREATION_CHANGELOG"), Font, Brushes.White, GetLayoutLoader().GetResItemBounds("PatchLogNoteLabel"));
 
             string imagePreview = (m_bHasChangedImagePath ? pszImagePath : null);
             m_pLabelFields[0].Text = imagePreview;

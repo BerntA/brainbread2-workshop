@@ -16,6 +16,7 @@ using Steamworks;
 using Workshopper.Core;
 using Workshopper.UI;
 using System.Diagnostics;
+using Workshopper.Filesystem;
 
 namespace Workshopper.Controls
 {
@@ -44,13 +45,23 @@ namespace Workshopper.Controls
         {
             m_pImagePreview = Globals.GetTexture(fileID.ToString(), "jpg");
             InitializeComponent();
+
             progressBar = new CustomProgressBar(fileID);
             progressBar.Parent = this;
             progressBar.Name = "ProgressBar";
             progressBar.Visible = false;
             progressBar.MouseEnter += new EventHandler(OnMouseEnterProgressBar);
             progressBar.MouseLeave += new EventHandler(OnMouseLeaveProgressBar);
+
+            btnUpdate = new ImageButton("update", "update_hover");
+            btnUpdate.Parent = this;
+            btnUpdate.Name = "UpdateButton";
+            btnUpdate.Click += new EventHandler(OnClickUpdate);
+            btnUpdate.MouseEnter += new EventHandler(OnEnterUpdateButton);
+            btnUpdate.MouseLeave += new EventHandler(OnLeaveUpdateButton);
+
             _layout = DynamicLayoutLoader.LoadLayoutForControl("addonitem", this, true);
+
             pszName = title;
             pszDescription = description;
             pszTags = tags;
@@ -59,7 +70,6 @@ namespace Workshopper.Controls
             pszDate = lastChangeDate;
             colOverlay = _layout.GetResItemBgColor("Overlay");
             m_bUploading = false;
-            btnUpdate = null;
             m_bWhitelisted = pszTags.Contains("Whitelisted");
         }
 
@@ -79,9 +89,7 @@ namespace Workshopper.Controls
         {
             updateHandle = updHandle;
             m_bUploading = true;
-
-            if (btnUpdate != null)
-                btnUpdate.Visible = btnUpdate.Enabled = false;
+            btnUpdate.Visible = btnUpdate.Enabled = false;
 
             progressBar.ShowProgress(updateHandle);
             Invalidate();
@@ -90,25 +98,10 @@ namespace Workshopper.Controls
         public void StopUploading()
         {
             m_bUploading = false;
-
-            if (btnUpdate != null)
-                btnUpdate.Visible = btnUpdate.Enabled = true;
+            btnUpdate.Visible = btnUpdate.Enabled = true;
 
             progressBar.HideProgress();
             Invalidate();
-        }
-
-        public void SetupItem()
-        {
-            btnUpdate = new ImageButton("update", "update_hover");
-            btnUpdate.Parent = this;
-            btnUpdate.Bounds = _layout.GetResItemBounds("UpdateButton");
-            btnUpdate.Click += new EventHandler(OnClickUpdate);
-            btnUpdate.MouseEnter += new EventHandler(OnEnterUpdateButton);
-            btnUpdate.MouseLeave += new EventHandler(OnLeaveUpdateButton);
-
-            if (m_bUploading)
-                btnUpdate.Visible = false;
         }
 
         public void UpdateItemLayout()
@@ -131,7 +124,7 @@ namespace Workshopper.Controls
             if (m_bUploading)
                 return;
 
-            CreationPanel panel = new CreationPanel(pszName, pszDescription, pszTags, m_iVisibility, ulFileID);
+            CreationPanel panel = new CreationPanel(this, pszName, pszDescription, pszTags, m_iVisibility, ulFileID);
             panel.ShowDialog(this);
             panel = null;
         }
@@ -205,7 +198,7 @@ namespace Workshopper.Controls
             if (m_bWhitelisted)
             {
                 e.Graphics.DrawImage(Properties.Resources.verified, _layout.GetResItemBounds("WhitelistedIcon"));
-                e.Graphics.DrawString("Your map is whitelisted!", new Font("Times New Roman", 10, FontStyle.Regular), new SolidBrush(Color.Green), _layout.GetResItemBounds("WhitelistLabel"), formatter);
+                e.Graphics.DrawString(Localization.GetTextForToken("ADDONITEM_WHITELISTED"), new Font("Times New Roman", 10, FontStyle.Regular), new SolidBrush(Color.Green), _layout.GetResItemBounds("WhitelistLabel"), formatter);
             }
 
             formatter.LineAlignment = StringAlignment.Center;

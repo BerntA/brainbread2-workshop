@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Workshopper.Controls;
+using Workshopper.Filesystem;
 
 namespace Workshopper.Core
 {
@@ -266,6 +267,51 @@ namespace Workshopper.Core
             SteamApps.GetAppInstallDir(appID, out path, 256);
 
             return path;
+        }
+
+        public static bool CreateItemDataFile(PublishedFileId_t fileID, string imagePath, string contentPath)
+        {
+            KeyValues pkvOriginal = new KeyValues();
+            try
+            {
+                if (string.IsNullOrEmpty(imagePath) && string.IsNullOrEmpty(contentPath))
+                    return false;
+
+                bool bLoaded = pkvOriginal.LoadFromFile(SteamCloudHandler.GetAddonItemPath(fileID.ToString()));
+
+                StringBuilder builder = new StringBuilder();
+                builder.Append("\"ItemData\"\n");
+                builder.Append("{\n");
+
+                if (bLoaded)
+                {
+                    builder.Append(string.Format("    \"imagePath\" \"{0}\"\n", (string.IsNullOrEmpty(imagePath) ? pkvOriginal.GetString("imagePath") : imagePath)));
+                    builder.Append(string.Format("    \"filePath\" \"{0}\"\n", (string.IsNullOrEmpty(contentPath) ? pkvOriginal.GetString("filePath") : contentPath)));
+                }
+                else
+                {
+                    builder.Append(string.Format("    \"imagePath\" \"{0}\"\n", (string.IsNullOrEmpty(imagePath) ? "" : imagePath)));
+                    builder.Append(string.Format("    \"filePath\" \"{0}\"\n", (string.IsNullOrEmpty(contentPath) ? "" : contentPath)));
+                }
+
+                builder.Append("}\n");
+
+                File.WriteAllText(SteamCloudHandler.GetAddonItemPath(fileID.ToString()), builder.ToString());
+                builder.Clear();
+                builder = null;
+            }
+            catch
+            {
+                LogAction(string.Format("Unable to create the item data file for addon {0}!", fileID));
+                return false;
+            }
+            finally
+            {
+                pkvOriginal.Dispose();
+                pkvOriginal = null;
+            }
+
+            return true;
         }
     }
 }

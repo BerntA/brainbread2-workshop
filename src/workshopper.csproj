@@ -119,7 +119,6 @@
     <Compile Include="Workshopper.Controls\TextButton.Designer.cs">
       <DependentUpon>TextButton.cs</DependentUpon>
     </Compile>
-    <Compile Include="Workshopper.Core\EventsShared.cs" />
     <Compile Include="Workshopper.Filesystem\Localization.cs" />
     <Compile Include="Workshopper.Core\SteamHandler.cs" />
     <Compile Include="Workshopper.Core\Globals.cs" />
@@ -133,6 +132,7 @@
     <Compile Include="Workshopper.Core\Utils.cs" />
     <Compile Include="Workshopper.Filesystem\KeyValues.cs" />
     <Compile Include="Workshopper.Filesystem\KeyValuesUtils.cs" />
+    <Compile Include="Workshopper.Filesystem\SteamCloudHandler.cs" />
     <Compile Include="Workshopper.UI\CreationPanel.cs">
       <SubType>Form</SubType>
     </Compile>

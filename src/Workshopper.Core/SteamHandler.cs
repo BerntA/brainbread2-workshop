@@ -12,6 +12,7 @@ using Steamworks;
 using System.IO;
 using Workshopper.UI;
 using Workshopper.Filesystem;
+using Workshopper.Controls;
 
 namespace Workshopper.Core
 {
@@ -21,6 +22,7 @@ namespace Workshopper.Core
         private static MainForm _mainFormAccessor;
 
         public static MainForm GetMainForm() { return _mainFormAccessor; }
+        public static AddonList GetAddonList() { return _mainFormAccessor._addonList; }
         public static bool HasInitializedSteam() { return m_bHasInitialized; }
         public static void SetMainFormHandle(MainForm handle) { _mainFormAccessor = handle; }
 
@@ -61,6 +63,7 @@ namespace Workshopper.Core
         public static bool InitSteamAPI()
         {
             Directory.CreateDirectory(string.Format("{0}\\assets\\workshopper\\addons", Globals.GetAppPath()));
+            Directory.CreateDirectory(string.Format("{0}\\itemdata", Globals.GetAppPath()));
             Utils.Initialize();
 
             if (!IsUsingCorrectAppID())
