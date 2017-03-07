@@ -34,6 +34,7 @@ namespace Workshopper.Core
         private static CallResult<SteamUGCQueryCompleted_t> m_QueryUGCCompleted;
         private static CallResult<CreateItemResult_t> m_CreateItemResult;
         private static CallResult<SubmitItemUpdateResult_t> m_SubmitItemUpdate;
+        private static bool _bHasFetchedFilesFromCloud;
 
         public static void Initialize()
         {
@@ -42,6 +43,7 @@ namespace Workshopper.Core
             m_SubmitItemUpdate = CallResult<SubmitItemUpdateResult_t>.Create(OnSubmitItem);
             pszImagePreviewURLs = new List<ImagePreviewItem_t>();
             creationHandle = null;
+            _bHasFetchedFilesFromCloud = false;
 
             RetrievePublishedItems();
         }
@@ -58,6 +60,7 @@ namespace Workshopper.Core
                 EUserUGCListSortOrder.k_EUserUGCListSortOrder_CreationOrderAsc,
                 SteamUtils.GetAppID(), (AppId_t)346330, 1);
             SteamUGC.SetReturnKeyValueTags(_ugcHandle, true);
+            SteamUGC.SetReturnLongDescription(_ugcHandle, true);
 
             SteamAPICall_t registerCallback = SteamUGC.SendQueryUGCRequest(_ugcHandle);
             m_QueryUGCCompleted.Set(registerCallback);
@@ -124,11 +127,32 @@ namespace Workshopper.Core
             if (handle == null || string.IsNullOrEmpty(contentPath))
                 return;
 
+            bool bFoundMap = false;
             foreach (string file in Directory.EnumerateFiles(contentPath, "*.bsp", SearchOption.AllDirectories))
             {
                 FileInfo info = new FileInfo(file);
                 SteamUGC.AddItemKeyValueTag(handle, "map_name", Path.GetFileNameWithoutExtension(file));
                 SteamUGC.AddItemKeyValueTag(handle, "map_size", info.Length.ToString());
+                info = null;
+                bFoundMap = true;
+            }
+
+            if (bFoundMap) // If we have a map, make sure that the map is inside the 'maps' directory.
+            {
+                try
+                {
+                    string mapPath = string.Format("{0}\\maps", contentPath);
+                    Directory.CreateDirectory(mapPath);
+                    foreach (string file in Directory.EnumerateFiles(contentPath, "*.bsp", SearchOption.AllDirectories))
+                    {
+                        if (!file.StartsWith(mapPath))
+                            File.Move(file, string.Format("{0}\\{1}", mapPath, Path.GetFileName(file)));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Utils.LogAction(string.Format("Unable to move file(s): {0}", ex.Message));
+                }
             }
         }
 
@@ -194,6 +218,9 @@ namespace Workshopper.Core
                 SteamUGCDetails_t pDetails;
                 if (SteamUGC.GetQueryUGCResult(param.m_handle, i, out pDetails))
                 {
+                    if (!_bHasFetchedFilesFromCloud)
+                        SteamCloudHandler.ReadFileFromCloud(pDetails.m_nPublishedFileId.ToString());
+
                     string url = null;
                     if (SteamUGC.GetQueryUGCPreviewURL(param.m_handle, i, out url, 1024))
                         AddImagePreviewItemToQueue(url, pDetails.m_nPublishedFileId.m_PublishedFileId.ToString());
@@ -207,6 +234,7 @@ namespace Workshopper.Core
             SteamUGC.ReleaseQueryUGCRequest(_ugcHandle);
 
             StartDownloadingPreviewImages();
+            _bHasFetchedFilesFromCloud = true;
         }
 
         private static void AddImagePreviewItemToQueue(string url, string fileID)

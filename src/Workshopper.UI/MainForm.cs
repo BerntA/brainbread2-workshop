@@ -54,6 +54,9 @@ namespace Workshopper.UI
 
         private void OnClickRefresh(object sender, EventArgs e)
         {
+            if (_addonList.IsUploadingAddon())
+                return;
+
             UGCHandler.RetrievePublishedItems();
         }
 
@@ -64,9 +67,19 @@ namespace Workshopper.UI
 
         private void OnClickCreate(object sender, EventArgs e)
         {
+            if (_addonList.IsUploadingAddon())
+                return;
+
             CreationPanel panel = new CreationPanel();
             panel.ShowDialog(this);
             panel = null;
+        }
+
+        protected override void OnFormExit()
+        {
+            _addonList.SaveAddonItemDataToCloud();
+
+            base.OnFormExit();
         }
 
         protected override void OnPaint(PaintEventArgs e)

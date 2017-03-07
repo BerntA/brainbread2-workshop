@@ -210,7 +210,9 @@ namespace Workshopper.UI
             GetTagsFromString(tags);
 
             int tagCategory = Utils.GetCategoryIndexForTag(pszTagList[0]); // Figure out which category this item used from the first tag itself, assuming that all tags have diff. text.
-            SetupTagList(Utils.GetAvailableTagCategories[tagCategory]);
+            string tagCatStr = Utils.GetAvailableTagCategories[tagCategory];
+            m_pItemCategoryButton.LabelTxt = tagCatStr;
+            SetupTagList(tagCatStr);
 
             for (int i = 0; i < pszTagList.Count(); i++)
             {

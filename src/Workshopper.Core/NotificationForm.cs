@@ -26,6 +26,12 @@ namespace Workshopper.Core
             _textNotification = text;
             Text = text;
             LoadLayout("warningdialog");
+
+            SizeF textSize = TextRenderer.MeasureText(_textNotification, Font);
+            if (textSize.Width > Width)
+                Width = (int)textSize.Width + 1;
+
+            exitButton.Location = new Point(Width - exitButton.Size.Width, 0);
         }
 
         protected override void OnFormExit()
@@ -37,8 +43,12 @@ namespace Workshopper.Core
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
-            e.Graphics.DrawString(_textNotification, Font, Brushes.White, GetLayoutLoader().GetResItemBounds("WarningText"));
-            e.Graphics.DrawRectangle(new Pen(GetLayoutLoader().GetResItemFgColor("Frame")), GetLayoutLoader().GetResItemBounds("Frame"));
+
+            Rectangle exitBtnBounds = exitButton.Bounds;
+            Rectangle textBounds = GetLayoutLoader().GetResItemBounds("WarningText");
+
+            e.Graphics.DrawString(_textNotification, Font, Brushes.White, new Rectangle(textBounds.X, textBounds.Y, Width - exitBtnBounds.Width, textBounds.Height));
+            e.Graphics.DrawRectangle(new Pen(GetLayoutLoader().GetResItemFgColor("Frame")), new Rectangle(0, 0, Width - exitBtnBounds.Width - 1, Height - 1));
         }
     }
 }

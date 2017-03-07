@@ -15,6 +15,7 @@ using System.Windows.Forms;
 using Steamworks;
 using Workshopper.Core;
 using Workshopper.UI;
+using Workshopper.Filesystem;
 
 namespace Workshopper.Controls
 {
@@ -78,6 +79,21 @@ namespace Workshopper.Controls
             }
         }
 
+        public bool IsUploadingAddon()
+        {
+            foreach (Control control in Controls)
+            {
+                if (control is AddonItem)
+                {
+                    AddonItem item = ((AddonItem)control);
+                    if (item.IsUploading())
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
         public void RefreshItems()
         {
             foreach (Control control in Controls)
@@ -88,6 +104,8 @@ namespace Workshopper.Controls
                     item.UpdateItemLayout();
                 }
             }
+
+            RefreshLayout();
         }
 
         public void RemoveItems()
@@ -99,6 +117,20 @@ namespace Workshopper.Controls
                     AddonItem item = ((AddonItem)Controls[i]);
                     item.Cleanup();
                     Controls.Remove(Controls[i]);
+                }
+            }
+
+            RefreshLayout();
+        }
+
+        public void SaveAddonItemDataToCloud()
+        {
+            foreach (Control control in Controls)
+            {
+                if (control is AddonItem)
+                {
+                    AddonItem item = ((AddonItem)control);
+                    SteamCloudHandler.SaveFileToCloud(item.GetItemFileID().ToString());
                 }
             }
         }

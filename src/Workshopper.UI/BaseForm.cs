@@ -30,12 +30,13 @@ namespace Workshopper.UI
         public static extern bool ReleaseCapture();
 
         protected DynamicLayoutLoader _layoutLoader;
+        protected ImageButton exitButton;
 
         public BaseForm()
         {
             InitializeComponent();
 
-            ImageButton exitButton = new ImageButton("exit", "exit_hover");
+            exitButton = new ImageButton("exit", "exit_hover");
             exitButton.Parent = this;
             exitButton.Click += new EventHandler(OnClickExit);
             exitButton.Name = "CloseButton";

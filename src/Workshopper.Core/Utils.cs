@@ -66,7 +66,6 @@ namespace Workshopper.Core
             }
             catch
             {
-                // TODO?
             }
             finally
             {
@@ -217,35 +216,6 @@ namespace Workshopper.Core
             catch
             {
                 return "N/A";
-            }
-        }
-
-        public static string GetMapDataScriptTemplate()
-        {
-            string fileTemplate =
-@"""MapData""
-{
-	""map"" ""%s1""
-	""title"" ""%s2""
-	""description"" ""%s3""
-	""author"" ""%s4""
-}
-";
-
-            return fileTemplate;
-        }
-
-        public static void CreateMapDataScripts(string path, string title, string description)
-        {
-            string fileTemplate = GetMapDataScriptTemplate();
-            foreach (string file in Directory.EnumerateFiles(path, "*.bsp", SearchOption.AllDirectories))
-            {
-                string fileName = Path.GetFileNameWithoutExtension(file);
-                string dest = string.Format("{0}\\data\\maps\\{1}.txt", path, fileName);
-                string content = fileTemplate.Replace("%s1", fileName).Replace("%s2", title).Replace("%s3", description).Replace("%s4", SteamUser.GetSteamID().m_SteamID.ToString());
-
-                Directory.CreateDirectory(Path.GetDirectoryName(dest));
-                File.WriteAllText(dest, content);
             }
         }
 

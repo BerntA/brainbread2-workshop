@@ -23,6 +23,7 @@ namespace Workshopper.Controls
     public partial class AddonItem : UserControl
     {
         public PublishedFileId_t GetItemFileID() { return ulFileID; }
+        public bool IsUploading() { return m_bUploading; }
 
         private DynamicLayoutLoader _layout;
         private Color colOverlay;
@@ -121,7 +122,7 @@ namespace Workshopper.Controls
 
         private void OnClickUpdate(object sender, EventArgs e)
         {
-            if (m_bUploading)
+            if (m_bUploading || SteamHandler.GetAddonList().IsUploadingAddon())
                 return;
 
             CreationPanel panel = new CreationPanel(this, pszName, pszDescription, pszTags, m_iVisibility, ulFileID);
