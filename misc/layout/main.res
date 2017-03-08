@@ -32,16 +32,16 @@
 	
 	"AddonList"
 	{
-		"xpos" "0"
-		"ypos" "21"
-		"wide" "749"
-		"tall" "297"	
+		"xpos" "1"
+		"ypos" "23" 
+		"wide" "748"
+		"tall" "296"	
 	}
 	
 	"Frame"
 	{
 		"xpos" "0"
-		"ypos" "21"
+		"ypos" "22"
 		"wide" "749"
 		"tall" "297"
 	}

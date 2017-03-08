@@ -399,23 +399,19 @@ namespace Workshopper.UI
                 return;
             }
 
-            if (string.IsNullOrEmpty(imagePreview) && !m_bShouldUpdateItem)
+            if (!m_bShouldUpdateItem)
             {
-                Utils.ShowWarningDialog(Localization.GetTextForToken("CREATION_FAILED5"), null, true);
-                return;
-            }
+                if (string.IsNullOrEmpty(imagePreview))
+                {
+                    Utils.ShowWarningDialog(Localization.GetTextForToken("CREATION_FAILED5"), null, true);
+                    return;
+                }
 
-            if (string.IsNullOrEmpty(pszContentPath) && !m_bShouldUpdateItem)
-            {
-                Utils.ShowWarningDialog(Localization.GetTextForToken("CREATION_FAILED6"), null, true);
-                return;
-            }
-
-            int maxDescriptionLen = 1000;
-            if (m_pDescription.Text.Length > maxDescriptionLen)
-            {
-                Utils.ShowWarningDialog(Localization.GetTextForToken("CREATION_FAILED7", maxDescriptionLen.ToString()), null, true);
-                return;
+                if (string.IsNullOrEmpty(pszContentPath))
+                {
+                    Utils.ShowWarningDialog(Localization.GetTextForToken("CREATION_FAILED6"), null, true);
+                    return;
+                }
             }
 
             if (!string.IsNullOrEmpty(pszContentPath))
