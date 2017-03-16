@@ -213,11 +213,15 @@ namespace Workshopper.Core
                 return;
             }
 
+            ulong userSteamID = SteamUser.GetSteamID().m_SteamID;
             for (uint i = 0; i < param.m_unNumResultsReturned; i++)
             {
                 SteamUGCDetails_t pDetails;
                 if (SteamUGC.GetQueryUGCResult(param.m_handle, i, out pDetails))
                 {
+                    if (pDetails.m_ulSteamIDOwner != userSteamID)
+                        continue;
+
                     if (!_bHasFetchedFilesFromCloud)
                         SteamCloudHandler.ReadFileFromCloud(pDetails.m_nPublishedFileId.ToString());
 

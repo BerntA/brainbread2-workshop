@@ -19,6 +19,11 @@ namespace Workshopper.Core
         public static string GetAppPath() { return Application.StartupPath; }
         public static string GetTexturePath() { return string.Format("{0}\\assets", GetAppPath()); }
 
+        public static string GetLastContentPath() { return Properties.Settings.Default.lastContentPath; }
+        public static string GetLastImagePath() { return Properties.Settings.Default.lastImagePath; }
+        public static void SetLastContentPath(string path) { Properties.Settings.Default.lastContentPath = path; Properties.Settings.Default.Save(); }
+        public static void SetLastImagePath(string path) { Properties.Settings.Default.lastImagePath = path; Properties.Settings.Default.Save(); }
+
         // Return the image found at the specified 'path'.
         public static Image GetTexture(string folder, string name, string extension = "png")
         {

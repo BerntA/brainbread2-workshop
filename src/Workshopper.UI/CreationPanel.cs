@@ -56,6 +56,10 @@ namespace Workshopper.UI
             m_bHasChangedImagePath = false;
             addonLink = null;
 
+            string lastContentPath = Globals.GetLastContentPath();
+            string lastImagePath = Globals.GetLastImagePath();
+            string gameDir = Utils.GetGameDirectory((AppId_t)346330);
+
             _fileDialog = new OpenFileDialog();
             _fileDialog.DefaultExt = ".jpg";
             _fileDialog.CheckFileExists = true;
@@ -65,10 +69,10 @@ namespace Workshopper.UI
             _fileDialog.Multiselect = false;
             _fileDialog.Filter = "JPG files|*.jpg";
             _fileDialog.FileOk += new CancelEventHandler(OnSelectImage);
-            _fileDialog.InitialDirectory = Utils.GetGameDirectory((AppId_t)346330);
+            _fileDialog.InitialDirectory = (string.IsNullOrEmpty(lastImagePath) ? gameDir : lastImagePath);
 
             _folderDialog = new FolderBrowserDialog();
-            _folderDialog.SelectedPath = Utils.GetGameDirectory((AppId_t)346330);
+            _folderDialog.SelectedPath = (string.IsNullOrEmpty(lastContentPath) ? gameDir : lastContentPath);
 
             TextButton btnImg = new TextButton(Localization.GetTextForToken("CREATION_SELECT_IMAGE"), Color.White, Color.Red);
             btnImg.Parent = this;
@@ -450,7 +454,11 @@ namespace Workshopper.UI
         {
             DialogResult result = _folderDialog.ShowDialog(this);
             if (result == System.Windows.Forms.DialogResult.OK)
+            {
                 pszContentPath = _folderDialog.SelectedPath;
+                if (!m_bShouldUpdateItem)
+                    Globals.SetLastContentPath(pszContentPath);
+            }
         }
 
         private void OnOpenImageSelection(object sender, EventArgs e)
@@ -474,6 +482,9 @@ namespace Workshopper.UI
             pszImagePath = path;
             if (pszImagePath != null && File.Exists(pszImagePath))
                 m_pImgPreview = Image.FromFile(pszImagePath);
+
+            if (!m_bShouldUpdateItem)
+                Globals.SetLastImagePath(Path.GetDirectoryName(path));
         }
 
         private void Cleanup()

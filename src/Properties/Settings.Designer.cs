@@ -22,5 +22,29 @@ namespace Workshopper.Properties {
                 return defaultInstance;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string lastContentPath {
+            get {
+                return ((string)(this["lastContentPath"]));
+            }
+            set {
+                this["lastContentPath"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string lastImagePath {
+            get {
+                return ((string)(this["lastImagePath"]));
+            }
+            set {
+                this["lastImagePath"] = value;
+            }
+        }
     }
 }
