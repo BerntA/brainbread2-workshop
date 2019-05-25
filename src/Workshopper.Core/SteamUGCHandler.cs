@@ -34,7 +34,9 @@ namespace Workshopper.Core
         private static CallResult<SteamUGCQueryCompleted_t> m_QueryUGCCompleted;
         private static CallResult<CreateItemResult_t> m_CreateItemResult;
         private static CallResult<SubmitItemUpdateResult_t> m_SubmitItemUpdate;
-        private static bool _bHasFetchedFilesFromCloud;
+        private static Dictionary<string, bool> _cloudFileCached;
+        private static uint _iWorkshopItemCount;
+        private static uint _iWorkshopItemPage;
 
         public static void Initialize()
         {
@@ -43,12 +45,19 @@ namespace Workshopper.Core
             m_SubmitItemUpdate = CallResult<SubmitItemUpdateResult_t>.Create(OnSubmitItem);
             pszImagePreviewURLs = new List<ImagePreviewItem_t>();
             creationHandle = null;
-            _bHasFetchedFilesFromCloud = false;
+            _cloudFileCached = new Dictionary<string, bool>();
 
             RetrievePublishedItems();
         }
 
         public static void RetrievePublishedItems()
+        {
+            _iWorkshopItemCount = 0;
+            _iWorkshopItemPage = 1;
+            RetrievePublishedItemsForPage();
+        }
+
+        public static void RetrievePublishedItemsForPage(uint page = 1)
         {
             if (!SteamHandler.HasInitializedSteam())
                 return;
@@ -58,7 +67,7 @@ namespace Workshopper.Core
                 EUserUGCList.k_EUserUGCList_Published,
                 EUGCMatchingUGCType.k_EUGCMatchingUGCType_Items,
                 EUserUGCListSortOrder.k_EUserUGCListSortOrder_CreationOrderAsc,
-                SteamUtils.GetAppID(), (AppId_t)346330, 1);
+                SteamUtils.GetAppID(), (AppId_t)346330, page);
             SteamUGC.SetReturnKeyValueTags(_ugcHandle, true);
             SteamUGC.SetReturnLongDescription(_ugcHandle, true);
 
@@ -203,13 +212,23 @@ namespace Workshopper.Core
 
         private static void OnUGCQueryComplete(SteamUGCQueryCompleted_t param, bool bIOFailure)
         {
-            SteamHandler.GetAddonList().RemoveItems();
-            pszImagePreviewURLs.Clear();
+            if (_iWorkshopItemCount <= 0)
+            {
+                SteamHandler.GetAddonList().RemoveItems();
+                pszImagePreviewURLs.Clear();
+            }
 
             if (bIOFailure || (param.m_eResult != EResult.k_EResultOK))
             {
                 Utils.ShowWarningDialog(Localization.GetTextForToken("ADDONLIST_FETCH_FAIL1"), null, true);
                 SteamUGC.ReleaseQueryUGCRequest(_ugcHandle);
+
+                if (_iWorkshopItemPage >= 2) // If something went wrong on the next following pages, refresh the ones that were added prior.
+                {
+                    SteamHandler.GetAddonList().RefreshLayout();
+                    StartDownloadingPreviewImages();
+                }
+
                 return;
             }
 
@@ -222,23 +241,31 @@ namespace Workshopper.Core
                     if (pDetails.m_ulSteamIDOwner != userSteamID)
                         continue;
 
-                    if (!_bHasFetchedFilesFromCloud)
-                        SteamCloudHandler.ReadFileFromCloud(pDetails.m_nPublishedFileId.ToString());
+                    string strID = pDetails.m_nPublishedFileId.m_PublishedFileId.ToString();
+                    if (!_cloudFileCached.ContainsKey(strID))
+                        _cloudFileCached[strID] = SteamCloudHandler.ReadFileFromCloud(strID);
 
                     string url = null;
                     if (SteamUGC.GetQueryUGCPreviewURL(param.m_handle, i, out url, 1024))
-                        AddImagePreviewItemToQueue(url, pDetails.m_nPublishedFileId.m_PublishedFileId.ToString());
+                        AddImagePreviewItemToQueue(url, strID);
 
                     string tags = pDetails.m_rgchTags + ",";
                     SteamHandler.GetAddonList().AddItem(pDetails.m_rgchTitle, pDetails.m_rgchDescription, tags, (int)pDetails.m_eVisibility, pDetails.m_nPublishedFileId, Utils.GetDateFromTimeCreated((ulong)pDetails.m_rtimeUpdated));
                 }
             }
 
-            SteamHandler.GetAddonList().RefreshLayout();
             SteamUGC.ReleaseQueryUGCRequest(_ugcHandle);
 
+            _iWorkshopItemCount += param.m_unNumResultsReturned;
+            if ((param.m_unTotalMatchingResults - _iWorkshopItemCount) > 0)
+            {
+                _iWorkshopItemPage++;
+                RetrievePublishedItemsForPage(_iWorkshopItemPage);
+                return;
+            }
+
+            SteamHandler.GetAddonList().RefreshLayout();
             StartDownloadingPreviewImages();
-            _bHasFetchedFilesFromCloud = true;
         }
 
         private static void AddImagePreviewItemToQueue(string url, string fileID)
