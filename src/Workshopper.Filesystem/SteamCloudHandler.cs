@@ -26,7 +26,7 @@ namespace Workshopper.Filesystem
             if (!SteamRemoteStorage.IsCloudEnabledForAccount() || !SteamRemoteStorage.IsCloudEnabledForApp())
                 return false;
 
-            int totalBytes, availableBytes;
+            ulong totalBytes, availableBytes;
             if (!SteamRemoteStorage.GetQuota(out totalBytes, out availableBytes))
                 return false;
 
