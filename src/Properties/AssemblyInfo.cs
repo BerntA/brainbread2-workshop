@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Reperio Studios")]
 [assembly: AssemblyProduct("BrainBread 2 Workshop Tool")]
-[assembly: AssemblyCopyright("Copyright © Reperio Studios 2017")]
+[assembly: AssemblyCopyright("Copyright © Reperio Studios 2019")]
 [assembly: AssemblyTrademark("Bernt Andreas Eide")]
 [assembly: AssemblyCulture("")]
 
